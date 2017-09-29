@@ -34,8 +34,8 @@ public class XWPFRunNormalizerTest {
             paragraph = templateHolder.getDocument().getParagraphs().get(0);
             sourceParagraphText = paragraph.getText();
             
-            new XWPFRunNormalizer(paragraph, "[{", "]").normalizeRuns();
-            new XWPFRunNormalizer(paragraph, "${", "}").normalizeRuns();
+            new XWPFRunNormalizer2(paragraph, "\\$\\{.+\\}").normalize();
+            new XWPFRunNormalizer2(paragraph, "\\[\\{.+\\]").normalize();
 
             templateHolder.save();
             
