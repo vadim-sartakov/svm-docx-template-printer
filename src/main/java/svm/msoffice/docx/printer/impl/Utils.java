@@ -16,7 +16,7 @@ public class Utils {
     
     public static void copyRun(XWPFRun source, XWPFRun destination) {
         destination.getCTR().setRPr(source.getCTR().getRPr());
-        source.setText(source.getText(0), 0);
+        destination.setText(source.getText(0), 0);
     }
     
     public static void copyParagraph(XWPFParagraph source, XWPFParagraph destination) {

@@ -16,10 +16,12 @@ public class XWPFRunNormalizer2 {
     
     private final XWPFParagraph paragraph;
     private final List<XWPFRun> allRuns;
-    private final Pattern pattern, startDistinguishPattern, endDistinguishPattern;
-        
-    private XWPFRun firstLevelRun, secondLevelRun;
-    private int firstLevelIndex, secondLevelIndex;
+    private final Pattern pattern, startDistinguishPattern, endDistinguishPattern;   
+    private final StringBuilder levelOneBuffer = new StringBuilder();
+    
+    private StringBuilder levelTwoBuffer;
+    private XWPFRun firstRun, lastRun;
+    private int firstIndex, lastIndex;
     
     public XWPFRunNormalizer2(XWPFParagraph paragraph, String regex) {
         this.paragraph = paragraph;
@@ -30,35 +32,40 @@ public class XWPFRunNormalizer2 {
     }
     
     public void normalize() {
-        
         if (!pattern.matcher(paragraph.getText()).find())
             return;
+        runForwardLoop();
+    }
+    
+    private void runForwardLoop() {
         
-        StringBuilder levelOneBuffer = new StringBuilder();
-        for (firstLevelIndex = 0; firstLevelIndex < allRuns.size(); firstLevelIndex++) {
+        for (lastIndex = 0; lastIndex < allRuns.size(); lastIndex++) {
                         
-            firstLevelRun = allRuns.get(firstLevelIndex);
-            levelOneBuffer.append(firstLevelRun.getText(0));
-            
-            if (pattern.matcher(levelOneBuffer.toString()).find()) {
-                runSecondLevelLoop();
-                levelOneBuffer = new StringBuilder();
+            lastRun = allRuns.get(lastIndex);
+            levelOneBuffer.append(lastRun.getText(0));
+
+            Matcher matcher = pattern.matcher(levelOneBuffer.toString());
+            if (matcher.find()) {
+                runBackwardLoop();
+                levelOneBuffer.delete(matcher.start(), matcher.end());
             }
             
         }
         
     }
     
-    private void runSecondLevelLoop() {
+    private void runBackwardLoop() {
         
-        StringBuilder levelTwoBuffer = new StringBuilder();
-        for (secondLevelIndex = firstLevelIndex; secondLevelIndex > 0; secondLevelIndex--) {
+        levelTwoBuffer = new StringBuilder();
+        for (firstIndex = lastIndex; firstIndex > 0; firstIndex--) {
             
-            secondLevelRun = allRuns.get(secondLevelIndex);
-            levelTwoBuffer.insert(0, secondLevelRun.getText(0));
+            firstRun = allRuns.get(firstIndex);
+            levelTwoBuffer.insert(0, firstRun.getText(0));
             
             if (pattern.matcher(levelTwoBuffer.toString()).find()) {
-                distinguishPattern();
+                collapse();
+                distinguishStart();
+                distinguishEnd();
                 break;
             }
             
@@ -66,36 +73,42 @@ public class XWPFRunNormalizer2 {
         
     }
     
-    private void distinguishPattern() {
-        distinguishStart();
-        distinguishEnd();
-        collapse();
-    }
+    private void collapse() {
         
+        if (firstIndex == lastIndex)
+            return;
+        
+        insertRun(firstRun, firstIndex, levelTwoBuffer.toString());
+        for (int index = firstIndex + 1; index <= lastIndex + 1; index++)
+            paragraph.removeRun(firstIndex + 1);
+        
+        int fragmentLength = lastIndex - firstIndex;
+        lastIndex -= fragmentLength;
+        
+    }
+    
+    private void insertRun(XWPFRun styleSource, int index, String text) {
+        XWPFRun newRun = paragraph.insertNewRun(index);
+        Utils.copyRun(styleSource, newRun);
+        newRun.setText(text, 0);
+    }
+            
     private void distinguishStart() {
-        XWPFRun startRun = secondLevelRun;
+       /* XWPFRun startRun = firstRun;
         Matcher matcher = startDistinguishPattern.matcher(startRun.getText(0));
         if (matcher.find()) {
             startRun.setText(matcher.group(1));
-            addRun(firstLevelIndex);
-        }
+            addRun(lastIndex);
+        }*/
     }
-    
-    private void addRun(int index) {
         
-    }
-    
     private void distinguishEnd() {
-        XWPFRun endRun = firstLevelRun;
+       /* XWPFRun endRun = lastRun;
         Matcher matcher = endDistinguishPattern.matcher(endRun.getText(0));
         if (matcher.find()) {
             endRun.setText(matcher.group(2));
-            addRun(secondLevelIndex);
-        }
+            addRun(firstIndex);
+        }*/
     }
-    
-    private void collapse() {
         
-    }
-    
 }
