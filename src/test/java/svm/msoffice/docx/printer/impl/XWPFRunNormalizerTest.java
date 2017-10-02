@@ -35,7 +35,7 @@ public class XWPFRunNormalizerTest {
             paragraph = templateHolder.getDocument().getParagraphs().get(0);
             sourceParagraphText = paragraph.getText();
             
-            new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
+            new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
             new XWPFRunNormalizer(
                     paragraph,
                     "\\[\\{.+\\]", 
@@ -74,6 +74,9 @@ public class XWPFRunNormalizerTest {
         assertEquals(runs.get(6).getText(0), "${name}");
         assertEquals(runs.get(8).getText(0), "${description}");
         assertEquals(runs.get(12).getText(0), "[{width: 20} ${manufacturer} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]");
+        assertEquals(runs.get(17).getText(0), "${weight}");
+        assertEquals(runs.get(19).getText(0), "${height}");
+        assertEquals(runs.get(21).getText(0), "${width}");
         
     }
     

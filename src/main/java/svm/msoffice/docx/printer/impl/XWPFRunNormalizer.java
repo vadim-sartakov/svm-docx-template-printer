@@ -48,7 +48,7 @@ public class XWPFRunNormalizer {
         this.boundSplitRestRegex = boundSplitRestRegex;
         this.allRuns = paragraph.getRuns();
         this.pattern = Pattern.compile(regex);
-        this.startSplitPattern = Pattern.compile("(?<rest>" + boundSplitRestRegex + ")(?<bound>(" + regex + ")(" + boundSplitRestRegex + "))");
+        this.startSplitPattern = Pattern.compile("(?<rest>" + boundSplitRestRegex + ")(?<bound>(" + regex + ")(" + boundSplitRestRegex + ")?)");
         this.endSplitPattern = Pattern.compile("(?<bound>" + regex + ")(?<rest>" + boundSplitRestRegex + ")");
     }
     
@@ -86,9 +86,12 @@ public class XWPFRunNormalizer {
             firstRun = allRuns.get(firstIndex);
             levelTwoBuffer.insert(0, firstRun.getText(0));
             
-            if (levelTwoBuffer.toString().contains(matchedString)) {
+            String resultText = levelTwoBuffer.toString();
+            
+            if (resultText.contains(matchedString)) {
                 
-                collapse(levelTwoBuffer.toString());
+                collapse(resultText);
+                splitRepeat(resultText);
                 splitBound(lastIndex, startSplitPattern);
                 splitBound(lastIndex, endSplitPattern);
                 
@@ -119,7 +122,56 @@ public class XWPFRunNormalizer {
         Utils.copyRun(styleSource, newRun);
         newRun.setText(text, 0);
     }
+    
+    /**
+     * In case if run contains repeated pattern.
+     */
+    private void splitRepeat(String resultText) {
+        
+        StringBuilder stringBuilder = new StringBuilder(resultText);
+        Matcher matcher = pattern.matcher(resultText);
+        
+        int totalMatchCount = getMatchCountAndReset(matcher);
+        if (totalMatchCount == 1)
+            return;
+        
+        int matchCount = 1;
+        int offset = 0;
+        while (matcher.find()) {
+            
+            if (matchCount == totalMatchCount)
+                continue;
+            
+            int matchEnd = matcher.end() - offset;
+            
+            String fragment = stringBuilder.toString().substring(0, matchEnd);
+            insertRun(
+                    firstRun,
+                    firstIndex + (matchCount - 1),
+                    fragment
+            );
+            stringBuilder.delete(0, matchEnd);
+            offset += matcher.end();
+            firstRun.setText(stringBuilder.toString(), 0);
+            
+            matchCount++;
+            
+        }
+        
+    }
+    
+    private int getMatchCountAndReset(Matcher matcher) {
+        
+        int getMatchCount = 0; 
+        while (matcher.find())
+            getMatchCount++;
                 
+        matcher.reset();
+        
+        return getMatchCount;
+        
+    }
+    
     private void splitBound(int index, Pattern pattern) {
         
         XWPFRun run = paragraph.getRuns().get(index);
@@ -127,7 +179,7 @@ public class XWPFRunNormalizer {
         if (matcher.find()) {
             insertRun(run, index, matcher.group(1));
             run.setText(matcher.group(2), 0);
-            lastIndex += matcher.group("rest").length();
+            lastIndex++;
         }
         
     }
