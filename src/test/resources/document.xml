@@ -167,7 +167,7 @@
 			<w:color w:val="000000"/>
 			<w:szCs w:val="21"/>
 			<w:lang w:val="en-US"/>
-		</w:rPr><w:t xml:space="preserve">${manufacurer}</w:t>
+		</w:rPr><w:t xml:space="preserve">${manufacturer}</w:t>
 	</w:r>
 	<w:proofErr w:type="spellStart"/>
 	

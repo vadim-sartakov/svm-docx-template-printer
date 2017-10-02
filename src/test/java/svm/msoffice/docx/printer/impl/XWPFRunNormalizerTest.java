@@ -6,6 +6,7 @@
 package svm.msoffice.docx.printer.impl;
 
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.Test;
@@ -34,8 +35,15 @@ public class XWPFRunNormalizerTest {
             paragraph = templateHolder.getDocument().getParagraphs().get(0);
             sourceParagraphText = paragraph.getText();
             
-            new XWPFRunNormalizer2(paragraph, "\\$\\{.+\\}").normalize();
-            new XWPFRunNormalizer2(paragraph, "\\[\\{.+\\]").normalize();
+            new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
+            new XWPFRunNormalizer(
+                    paragraph,
+                    "\\[\\{.+\\]", 
+                    textFragment -> 
+                            StringUtils.countMatches(textFragment, "[") ==
+                            StringUtils.countMatches(textFragment, "]"),
+                    "[^\\[]+"
+            ).normalize();
 
             templateHolder.save();
             
@@ -62,8 +70,10 @@ public class XWPFRunNormalizerTest {
     private void checkParameterRunConsistency() {
 
         List<XWPFRun> runs = paragraph.getRuns();
-        assertEquals(runs.get(2), "[{width: 20; number: \"0.00\"} ${price}] ");
-        //assertEquals(runs.get(2), "[{width: 20; number: \"0.00\"} ${price}] ");
+        assertEquals(runs.get(2).getText(0), "[{width: 20; number: \"0.00\"} ${price}]");
+        assertEquals(runs.get(6).getText(0), "${name}");
+        assertEquals(runs.get(8).getText(0), "${description}");
+        assertEquals(runs.get(12).getText(0), "[{width: 20} ${manufacturer} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]");
         
     }
     

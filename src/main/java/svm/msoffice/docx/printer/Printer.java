@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -109,8 +110,15 @@ public class Printer<T> {
             
             this.paragraph = currentParagraph;
             
-            new XWPFRunNormalizer(paragraph, "[{", "]").normalizeRuns();
-            new XWPFRunNormalizer(paragraph, "${", "}").normalizeRuns();
+            new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
+            new XWPFRunNormalizer(
+                    paragraph,
+                    "\\[\\{.+\\]", 
+                    textFragment -> 
+                            StringUtils.countMatches(textFragment, "[") ==
+                            StringUtils.countMatches(textFragment, "]"),
+                    "[^\\[]+"
+            ).normalize();
             
             renderTemplatesOfParagraph();
             
@@ -375,8 +383,15 @@ public class Printer<T> {
     
     private void insertIndexInParameters() throws Exception {
         
-        new XWPFRunNormalizer(paragraph, "[{", "]").normalizeRuns();
-        new XWPFRunNormalizer(paragraph, "${", "}").normalizeRuns();
+        new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
+        new XWPFRunNormalizer(
+                paragraph,
+                "\\[\\{.+\\]", 
+                textFragment -> 
+                        StringUtils.countMatches(textFragment, "[") ==
+                        StringUtils.countMatches(textFragment, "]"),
+                "[^\\[]+"
+        ).normalize();
         
         for (XWPFRun currentRun : paragraph.getRuns()) {
             
