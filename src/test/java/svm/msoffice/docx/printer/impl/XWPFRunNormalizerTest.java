@@ -6,7 +6,6 @@
 package svm.msoffice.docx.printer.impl;
 
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.Test;
@@ -36,14 +35,7 @@ public class XWPFRunNormalizerTest {
             sourceParagraphText = paragraph.getText();
             
             new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
-            new XWPFRunNormalizer(
-                    paragraph,
-                    "\\[\\{[^\\[\\]]+(?R)\\]", 
-                    textFragment -> 
-                            StringUtils.countMatches(textFragment, "[") ==
-                            StringUtils.countMatches(textFragment, "]"),
-                    "[^\\[]+"
-            ).normalize();
+            new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
 
             templateHolder.save();
             

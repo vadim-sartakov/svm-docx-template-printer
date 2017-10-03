@@ -111,14 +111,7 @@ public class Printer<T> {
             this.paragraph = currentParagraph;
             
             new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
-            new XWPFRunNormalizer(
-                    paragraph,
-                    "\\[\\{.+\\]", 
-                    textFragment -> 
-                            StringUtils.countMatches(textFragment, "[") ==
-                            StringUtils.countMatches(textFragment, "]"),
-                    "[^\\[]+"
-            ).normalize();
+            new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
             
             renderTemplatesOfParagraph();
             
@@ -384,14 +377,7 @@ public class Printer<T> {
     private void insertIndexInParameters() throws Exception {
         
         new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
-        new XWPFRunNormalizer(
-                paragraph,
-                "\\[\\{.+\\]", 
-                textFragment -> 
-                        StringUtils.countMatches(textFragment, "[") ==
-                        StringUtils.countMatches(textFragment, "]"),
-                "[^\\[]+"
-        ).normalize();
+        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
         
         for (XWPFRun currentRun : paragraph.getRuns()) {
             

@@ -1,7 +1,8 @@
 package svm.msoffice.docx.printer.impl;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Map;
 import svm.misc.regex.Matcher;
 import svm.misc.regex.Pattern;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -16,38 +17,29 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 public class XWPFRunNormalizer {
     
     private final XWPFParagraph paragraph;
-    private final Predicate<String> condition;
     private final List<XWPFRun> allRuns;
-    private final Pattern pattern, startSplitPattern, endSplitPattern;   
-
+    private final Pattern pattern;   
+    private final Map<MatchPair, String> matches = new HashMap<>();
+    
     private XWPFRun firstRun, lastRun;
     private int firstIndex, lastIndex;
     
     public XWPFRunNormalizer(XWPFParagraph paragraph, String regex) {
-        this(paragraph, regex, null, ".+");
+        this(paragraph, regex, ".+");
     }
-    
-    public XWPFRunNormalizer(XWPFParagraph paragraph, String regex, Predicate<String> condition) {
-        this(paragraph, regex, condition, ".+");
-    }
-        
+            
     /**
      * 
      * @param paragraph
      * @param regex
-     * @param condition - some extra condition to test if it's not enough for regex.
      * @param boundSplitRestRegex - regex for capturing rest in the bound splitting procedure.
      */
     public XWPFRunNormalizer(XWPFParagraph paragraph,
             String regex,
-            Predicate<String> condition,
             String boundSplitRestRegex) {
         this.paragraph = paragraph;
-        this.condition = condition == null ? textFragment -> true : condition;
         this.allRuns = paragraph.getRuns();
         this.pattern = Pattern.compile(regex);
-        this.startSplitPattern = Pattern.compile("(" + boundSplitRestRegex + ")((" + regex + ")(" + boundSplitRestRegex + ")?)");
-        this.endSplitPattern = Pattern.compile("(" + regex + ")(" + boundSplitRestRegex + ")");
     }
     
     public void normalize() {
@@ -67,9 +59,17 @@ public class XWPFRunNormalizer {
             String bufferOneResult = levelOneBuffer.toString();
             
             Matcher matcher = pattern.matcher(bufferOneResult);
-            if (matcher.find() && condition.test(bufferOneResult)) {
-                runBackwardLoop(levelOneBuffer.substring(matcher.start(), matcher.end()));
-                levelOneBuffer = new StringBuilder();
+            while (matcher.find()) {
+                
+                MatchPair matchPair = new MatchPair(matcher.start(), matcher.end());
+                
+                if (matches.get(matchPair) != null)
+                    continue;
+                
+                String matchedString = levelOneBuffer.substring(matcher.start(), matcher.end());
+                matches.put(matchPair, matchedString);
+                runBackwardLoop(matchedString);
+                
             }
             
         }
@@ -90,8 +90,7 @@ public class XWPFRunNormalizer {
                 
                 collapse(resultText);
                 splitRepeat(resultText);
-                splitBound(lastIndex, startSplitPattern);
-                splitBound(lastIndex, endSplitPattern);
+                splitBounds(matchedString);
                 
                 break;
                 
@@ -115,10 +114,10 @@ public class XWPFRunNormalizer {
         
     }
     
-    private void insertRun(XWPFRun styleSource, int index, String text) {
+    private void insertRun(XWPFRun sourceRun, int index, String newRunText) {
         XWPFRun newRun = paragraph.insertNewRun(index);
-        Utils.copyRun(styleSource, newRun);
-        newRun.setText(text, 0);
+        Utils.copyRun(sourceRun, newRun);
+        newRun.setText(newRunText, 0);
     }
     
     /**
@@ -170,16 +169,71 @@ public class XWPFRunNormalizer {
         
     }
     
-    private void splitBound(int index, Pattern pattern) {
+    private void splitBounds(String matchedString) {
         
-        XWPFRun run = paragraph.getRuns().get(index);
-        Matcher matcher = pattern.matcher(run.getText(0));
-        if (matcher.find()) {
-            insertRun(run, index, matcher.group(1));
-            run.setText(matcher.group(2), 0);
+        XWPFRun run = paragraph.getRuns().get(lastIndex);
+        String runText = run.getText(0);
+        Matcher matcher = Pattern.compile(Pattern.quote(matchedString))
+                .matcher(runText);
+        matcher.find();
+        
+        boolean splitted = false;
+        if (matcher.start() > 0) {
+            insertRun(run, lastIndex, runText.substring(0, matcher.start()));
+            splitted = true;
             lastIndex++;
         }
         
+        if (matcher.end() < runText.length()) {
+            insertRun(run, lastIndex + 1, runText.substring(matcher.end(), runText.length()));
+            splitted = true;
+            lastIndex++;
+        }
+        
+        if (splitted) 
+            run.setText(matchedString, 0);
+        
     }
             
+}
+
+class MatchPair {
+    
+    final int start;
+    final int end;
+
+    public MatchPair(int start, int end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + this.start;
+        hash = 67 * hash + this.end;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MatchPair other = (MatchPair) obj;
+        if (this.start != other.start) {
+            return false;
+        }
+        if (this.end != other.end) {
+            return false;
+        }
+        return true;
+    }
+        
 }
