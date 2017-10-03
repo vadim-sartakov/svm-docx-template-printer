@@ -38,7 +38,7 @@ public class XWPFRunNormalizerTest {
             new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
             new XWPFRunNormalizer(
                     paragraph,
-                    "\\[\\{.+\\]", 
+                    "\\[\\{[^\\[\\]]+(?R)\\]", 
                     textFragment -> 
                             StringUtils.countMatches(textFragment, "[") ==
                             StringUtils.countMatches(textFragment, "]"),

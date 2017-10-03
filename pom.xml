@@ -64,6 +64,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>svm.misc</groupId>
+                <artifactId>regex</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
     
 </project>

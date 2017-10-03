@@ -2,8 +2,8 @@ package svm.msoffice.docx.printer.impl;
 
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import svm.misc.regex.Matcher;
+import svm.misc.regex.Pattern;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
@@ -17,7 +17,6 @@ public class XWPFRunNormalizer {
     
     private final XWPFParagraph paragraph;
     private final Predicate<String> condition;
-    private final String boundSplitRestRegex;
     private final List<XWPFRun> allRuns;
     private final Pattern pattern, startSplitPattern, endSplitPattern;   
 
@@ -45,11 +44,10 @@ public class XWPFRunNormalizer {
             String boundSplitRestRegex) {
         this.paragraph = paragraph;
         this.condition = condition == null ? textFragment -> true : condition;
-        this.boundSplitRestRegex = boundSplitRestRegex;
         this.allRuns = paragraph.getRuns();
         this.pattern = Pattern.compile(regex);
-        this.startSplitPattern = Pattern.compile("(?<rest>" + boundSplitRestRegex + ")(?<bound>(" + regex + ")(" + boundSplitRestRegex + ")?)");
-        this.endSplitPattern = Pattern.compile("(?<bound>" + regex + ")(?<rest>" + boundSplitRestRegex + ")");
+        this.startSplitPattern = Pattern.compile("(" + boundSplitRestRegex + ")((" + regex + ")(" + boundSplitRestRegex + ")?)");
+        this.endSplitPattern = Pattern.compile("(" + regex + ")(" + boundSplitRestRegex + ")");
     }
     
     public void normalize() {
