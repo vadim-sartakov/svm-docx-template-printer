@@ -1,7 +1,6 @@
 package svm.msoffice.docx.printer.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import svm.misc.regex.Matcher;
 import svm.misc.regex.Pattern;
@@ -17,7 +16,6 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 public class XWPFRunNormalizer {
     
     private final XWPFParagraph paragraph;
-    private final List<XWPFRun> allRuns;
     private final Pattern pattern;   
     private final Map<MatchPair, String> matches = new HashMap<>();
     
@@ -38,39 +36,90 @@ public class XWPFRunNormalizer {
             String regex,
             String boundSplitRestRegex) {
         this.paragraph = paragraph;
-        this.allRuns = paragraph.getRuns();
         this.pattern = Pattern.compile(regex);
     }
     
     public void normalize() {
         if (!pattern.matcher(paragraph.getText()).find())
             return;
+        splitRuns();
         runForwardLoop();
+    }
+    
+    /**
+     * If run contains repeated pattern, this method will split it up.
+     */
+    private void splitRuns() {
+        
+        for (lastIndex = 0; lastIndex < paragraph.getRuns().size(); lastIndex++) {    
+            XWPFRun run = paragraph.getRuns().get(lastIndex);
+            splitRepeat(run, lastIndex);
+        }
+        
+    }
+    
+    private void splitRepeat(XWPFRun run, int index) {
+        
+        String runText = run.getText(0);
+        StringBuilder stringBuilder = new StringBuilder(runText);
+        Matcher matcher = pattern.matcher(runText);
+        
+        int totalMatchCount = getMatchCountAndReset(matcher);
+        if (totalMatchCount == 1)
+            return;
+        
+        int matchCount = 1;
+        int offset = 0;
+        while (matcher.find()) {
+                        
+            int matchEnd = matcher.end() - offset;
+            
+            String fragment = stringBuilder.toString().substring(0, matchEnd);
+            insertRun(
+                    run,
+                    index + (matchCount - 1),
+                    fragment
+            );
+            stringBuilder.delete(0, matchEnd);
+            offset += matchEnd;
+            run.setText(stringBuilder.toString(), 0);
+            
+            matchCount++;
+            
+        }
+        
+    }
+    
+    private int getMatchCountAndReset(Matcher matcher) {
+        
+        int getMatchCount = 0; 
+        while (matcher.find())
+            getMatchCount++;
+                
+        matcher.reset();
+        
+        return getMatchCount;
+        
     }
     
     private void runForwardLoop() {
         
         StringBuilder levelOneBuffer = new StringBuilder();
-        for (lastIndex = 0; lastIndex < allRuns.size(); lastIndex++) {
+        for (lastIndex = 0; lastIndex < paragraph.getRuns().size(); lastIndex++) {
                         
-            lastRun = allRuns.get(lastIndex);
+            lastRun = paragraph.getRuns().get(lastIndex);
             levelOneBuffer.append(lastRun.getText(0));
             
             String bufferOneResult = levelOneBuffer.toString();
             
             Matcher matcher = pattern.matcher(bufferOneResult);
-            int matchCount = 0;
             while (matcher.find()) {
                                 
                 MatchPair matchPair = new MatchPair(matcher.start(), matcher.end());
                 
                 if (matches.get(matchPair) != null)
                     continue;
-                
-                matchCount++;
-                if (matchCount > 1)
-                    lastIndex++;
-                
+                                
                 String matchedString = levelOneBuffer.substring(matcher.start(), matcher.end());
                 matches.put(matchPair, matchedString);
                 runBackwardLoop(matchedString);
@@ -86,7 +135,7 @@ public class XWPFRunNormalizer {
         StringBuilder levelTwoBuffer = new StringBuilder();
         for (firstIndex = lastIndex; firstIndex > 0; firstIndex--) {
             
-            firstRun = allRuns.get(firstIndex);
+            firstRun = paragraph.getRuns().get(firstIndex);
             levelTwoBuffer.insert(0, firstRun.getText(0));
             
             String resultText = levelTwoBuffer.toString();
@@ -94,7 +143,6 @@ public class XWPFRunNormalizer {
             if (resultText.contains(matchedString)) {
                 
                 collapse(resultText);
-                splitRepeat(resultText);
                 splitBounds(matchedString);
                 
                 break;
@@ -124,56 +172,7 @@ public class XWPFRunNormalizer {
         Utils.copyRun(sourceRun, newRun);
         newRun.setText(newRunText, 0);
     }
-    
-    /**
-     * In case if run contains repeated pattern.
-     */
-    private void splitRepeat(String resultText) {
-        
-        StringBuilder stringBuilder = new StringBuilder(resultText);
-        Matcher matcher = pattern.matcher(resultText);
-        
-        int totalMatchCount = getMatchCountAndReset(matcher);
-        if (totalMatchCount == 1)
-            return;
-        
-        int matchCount = 1;
-        int offset = 0;
-        while (matcher.find()) {
             
-            if (matchCount == totalMatchCount)
-                continue;
-            
-            int matchEnd = matcher.end() - offset;
-            
-            String fragment = stringBuilder.toString().substring(0, matchEnd);
-            insertRun(
-                    firstRun,
-                    firstIndex + (matchCount - 1),
-                    fragment
-            );
-            stringBuilder.delete(0, matchEnd);
-            offset += matchEnd;
-            firstRun.setText(stringBuilder.toString(), 0);
-            
-            matchCount++;
-            
-        }
-        
-    }
-    
-    private int getMatchCountAndReset(Matcher matcher) {
-        
-        int getMatchCount = 0; 
-        while (matcher.find())
-            getMatchCount++;
-                
-        matcher.reset();
-        
-        return getMatchCount;
-        
-    }
-    
     private void splitBounds(String matchedString) {
         
         XWPFRun run = paragraph.getRuns().get(lastIndex);
