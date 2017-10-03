@@ -59,17 +59,22 @@ public class XWPFRunNormalizer {
             String bufferOneResult = levelOneBuffer.toString();
             
             Matcher matcher = pattern.matcher(bufferOneResult);
+            int matchCount = 0;
             while (matcher.find()) {
-                
+                                
                 MatchPair matchPair = new MatchPair(matcher.start(), matcher.end());
                 
                 if (matches.get(matchPair) != null)
                     continue;
                 
+                matchCount++;
+                if (matchCount > 1)
+                    lastIndex++;
+                
                 String matchedString = levelOneBuffer.substring(matcher.start(), matcher.end());
                 matches.put(matchPair, matchedString);
                 runBackwardLoop(matchedString);
-                
+                                
             }
             
         }
@@ -148,7 +153,7 @@ public class XWPFRunNormalizer {
                     fragment
             );
             stringBuilder.delete(0, matchEnd);
-            offset += matcher.end();
+            offset += matchEnd;
             firstRun.setText(stringBuilder.toString(), 0);
             
             matchCount++;
