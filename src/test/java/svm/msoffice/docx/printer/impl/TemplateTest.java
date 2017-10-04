@@ -5,34 +5,32 @@
  */
 package svm.msoffice.docx.printer.impl;
 
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Map;
 import static org.junit.Assert.*;
+import org.junit.Test;
+import svm.msoffice.docx.printer.utils.ExpectedFactory;
 
 /**
  *
  * @author sartakov
  */
 public class TemplateTest {
-    
-    public TemplateTest() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
 
-    @Test
-    public void testSomeMethod() {
-        fail("The test case is a prototype.");
-    }
-
+    private final Map<Integer, String> correctResults = ExpectedFactory.getRenderResults();
+        
     @Test
     public void testRender() {
-        System.out.println("render");
-        Template instance = null;
-        instance.render();
-        fail("The test case is a prototype.");
+        
+        Map<Integer, Template> correctTemplates = ExpectedFactory.getCorrectTemplates();
+        correctTemplates.entrySet().forEach(entry -> {
+            
+            String actual = entry.getValue().render();
+            String expected = correctResults.get(entry.getKey());
+            
+            assertEquals(expected, actual);
+            
+        });
+        
     }
     
 }

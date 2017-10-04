@@ -1,4 +1,4 @@
-package svm.msoffice.docx.printer;
+package svm.msoffice.docx.printer.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

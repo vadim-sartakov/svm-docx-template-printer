@@ -65,7 +65,7 @@ public class Parser {
         String formatString = scopeMatcher.group(1);
         String contentString = scopeMatcher.group(2);
         
-        Template intermediateTemplate = new Template(run, scopeMatcher.group(0));
+        Template intermediateTemplate = new Template(scopeMatcher.group(0));
         parseFormats(intermediateTemplate, formatString);
         
         String contentWithParamsOnly = contentString.replaceAll(FORMAT_SCOPE_PATTERN.pattern(), "");      
@@ -142,7 +142,7 @@ public class Parser {
         Map<String, Object> parameters = parseParameters(templateString);
 
         if (parameters.size() > 0) {
-            template = new Template(run, matcher.group(0));
+            template = new Template(matcher.group(0));
             template.parameterValues = parameters;
             templates.put(index, template);
         }

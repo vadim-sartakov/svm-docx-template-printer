@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package svm.msoffice.docx.printer;
+package svm.msoffice.docx.printer.utils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

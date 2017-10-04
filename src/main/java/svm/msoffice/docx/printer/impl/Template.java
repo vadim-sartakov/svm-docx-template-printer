@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
 import svm.msoffice.docx.printer.Printer;
 
 /**
@@ -23,7 +22,6 @@ import svm.msoffice.docx.printer.Printer;
  */
 public class Template {
     
-    private final XWPFRun run;
     private String templateString;
     private String renderResult;
     public SimpleEntry<String, String> format;
@@ -31,16 +29,16 @@ public class Template {
     public Map<String, Object> parameterValues;
     public Template enclosingTemplate;
 
-    public Template(XWPFRun run, String templateString) {
-        this.run = run;
+    public Template(String templateString) {
         this.templateString = templateString;
         this.renderResult = templateString;
     }
 
     /**
      * Renders template into the specified run.
+     * @return rendered string.
      */
-    public void render() {
+    public String render() {
 
         if (enclosingTemplate != null) {
 
@@ -55,7 +53,8 @@ public class Template {
         }
 
         renderResult = getRendered();
-        run.setText(renderResult, 0);
+        
+        return renderResult;
 
     }
 

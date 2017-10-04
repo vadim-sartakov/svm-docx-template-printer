@@ -1,10 +1,11 @@
-package svm.msoffice.docx.printer;
+package svm.msoffice.docx.printer.utils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import svm.msoffice.docx.printer.Printer;
 
 /**
  *
@@ -17,7 +18,7 @@ public class PrinterFactory {
         Item item = new Item();
         item.setName("Screwdriver");
         item.setDescription("Handy screwdriver");
-        item.setPrice(new BigDecimal("12.65"));
+        item.setPrice(new BigDecimal("12.6586"));
         item.setManufacturer("Some factory lmtd");
         item.setReleaseDate(LocalDate.of(2012, 3, 25));
         item.setWeight("0.5 kg");

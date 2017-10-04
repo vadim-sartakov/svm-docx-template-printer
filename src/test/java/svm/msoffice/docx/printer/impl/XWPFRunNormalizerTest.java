@@ -10,7 +10,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import svm.msoffice.docx.printer.TemplateHolder;
+import svm.msoffice.docx.printer.utils.TemplateHolder;
 
 /**
  *

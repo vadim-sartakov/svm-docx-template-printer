@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,11 +69,9 @@ public class Printer<T> {
     public final static Pattern TABLE_CELL_PATTERN = Pattern.compile("\\{([^$\\.:\\}]+)\\.");
     
     private XWPFParagraph paragraph;
-    private XWPFRun run;
     private Map<String, Converter> converters;
     private Map<Integer, Template> templates;
     private final Map<String, Object> variables = new HashMap<>();
-    private Template template;
     private int index;
     private int tableRowIndex;
     
@@ -155,7 +154,6 @@ public class Printer<T> {
         index = 0;
         for (XWPFRun currentRun : paragraph.getRuns()) {
         
-            this.run = currentRun;
             Template currentTemplate = templates.get(index);
             if (currentTemplate != null)
                 currentTemplate.render();
@@ -345,11 +343,11 @@ public class Printer<T> {
     }
 
     public Map<String, Object> getVariables() {
-        return variables;
+        return variables == null ? null : Collections.unmodifiableMap(variables);
     }
 
     public Map<String, Converter> getConverters() {
-        return converters;
+        return converters == null ? null : Collections.unmodifiableMap(converters);
     }
 
     public XWPFDocument getTemplateFile() {
