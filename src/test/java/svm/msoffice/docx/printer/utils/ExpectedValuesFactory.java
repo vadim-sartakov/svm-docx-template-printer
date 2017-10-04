@@ -11,7 +11,7 @@ import svm.msoffice.docx.printer.impl.Template;
  *
  * @author sartakov
  */
-public class ExpectedFactory {
+public class ExpectedValuesFactory {
     
     public static Map<Integer, Template> getCorrectTemplates() {
         
@@ -40,10 +40,11 @@ public class ExpectedFactory {
         enclosingTemplate.parameterValues = new HashMap<>();
         enclosingTemplate.parameterValues.put("${releaseDate}", LocalDate.of(2012, 3, 25));
         
-        template = new Template("[{width: 40} ${manufacturer} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]");
-        template.width = 40;
+        template = new Template("[{width: 100} ${manufacturer} ${serialNumber} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]");
+        template.width = 100;
         template.parameterValues = new HashMap<>();
         template.parameterValues.put("${manufacturer}", "Some factory lmtd");
+        template.parameterValues.put("${serialNumber}", "15358-548");
         template.enclosingTemplate = enclosingTemplate;
         correctTemplates.put(8, template);
         
@@ -72,7 +73,7 @@ public class ExpectedFactory {
         result.put(2, "Screwdriver");
         result.put(4, "       12,66        ");
         result.put(6, "Handy screwdriver");
-        result.put(8, "      Some factory lmtd 25.03.2012      ");
+        result.put(8, "                               Some factory lmtd 15358-548 25.03.2012                               ");
         result.put(10, "0.5 kg");
         result.put(12, "20 mm");
         result.put(14, "500 mm");

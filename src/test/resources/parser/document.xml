@@ -92,7 +92,7 @@
 			<w:szCs w:val="21"/>
 			<w:lang w:val="en-US"/>
 		</w:rPr>
-		<w:t xml:space="preserve">[{width: 40} ${manufacturer} [{date: "dd.MM.YYYY"} ${releaseDate}]]</w:t>
+		<w:t xml:space="preserve">[{width: 100} ${manufacturer} ${serialNumber} [{date: "dd.MM.YYYY"} ${releaseDate}]]</w:t>
 	</w:r>
 	<w:proofErr w:type="spellEnd"/>	
 	<w:proofErr w:type="spellStart"/>

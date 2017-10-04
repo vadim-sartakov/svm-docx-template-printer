@@ -5,12 +5,14 @@
  */
 package svm.msoffice.docx.printer.impl;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.List;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import svm.msoffice.docx.printer.utils.TemplateHolder;
 
 /**
  *
@@ -22,40 +24,34 @@ public class XWPFRunNormalizerTest {
     XWPFParagraph paragraph;
     
     @Test
-    public void testNormalizeRuns() {
+    public void testNormalizeRuns() throws Exception {
         normalizeAndSave();
         checkResults();        
     }
     
-    private void normalizeAndSave() {
+    private void normalizeAndSave() throws Exception {
         
-        try (TemplateHolder templateHolder = new TemplateHolder("src/test/resources/normalizer/template.docx")) {
+        XWPFDocument document = new XWPFDocument(
+                new FileInputStream("src/test/resources/normalizer/template.docx"));
             
-            paragraph = templateHolder.getDocument().getParagraphs().get(0);
-            sourceParagraphText = paragraph.getText();
-            
-            new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
-            new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
+        paragraph = document.getParagraphs().get(0);
+        sourceParagraphText = paragraph.getText();
 
-            templateHolder.save();
-            
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
+        new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
+        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
+
+        document.write(new FileOutputStream("target/output.docx"));
         
     }
     
-    private void checkResults() {
+    private void checkResults() throws Exception {
             
-        try (TemplateHolder templateHolder = new TemplateHolder("target/output.docx")) {
-            
-            paragraph = templateHolder.getDocument().getParagraphs().get(0);
-            assertEquals(sourceParagraphText, paragraph.getText());
-            checkParameterRunConsistency();
-            
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
+        XWPFDocument document = new XWPFDocument(
+                new FileInputStream("target/output.docx"));
+        
+        paragraph = document.getParagraphs().get(0);
+        assertEquals(sourceParagraphText, paragraph.getText());
+        checkParameterRunConsistency();
         
     }
     

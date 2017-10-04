@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import svm.msoffice.docx.printer.Printer;
 import svm.msoffice.docx.printer.utils.PrinterFactory;
-import svm.msoffice.docx.printer.utils.ExpectedFactory;
+import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
 
 /**
  *
@@ -20,12 +20,13 @@ import svm.msoffice.docx.printer.utils.ExpectedFactory;
  */
 public class ParserTest {
     
-    private final Printer<Item> printer = PrinterFactory.getInstance("src/test/resources/parser/template.docx");
+    private final Printer<Item> printer = PrinterFactory
+            .getInstance("src/test/resources/parser/template.docx");
     
     @Test
     public void testParse() throws Exception {
                
-        Map<Integer, Template> correctTemplates = ExpectedFactory.getCorrectTemplates();
+        Map<Integer, Template> correctTemplates = ExpectedValuesFactory.getCorrectTemplates();
         
         XWPFParagraph paragraph = printer.getTemplateFile().getParagraphs().get(0);
         Map<Integer, Template> parsedTemplates = new Parser(printer, paragraph).parse();

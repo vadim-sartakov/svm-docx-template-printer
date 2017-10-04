@@ -13,13 +13,14 @@ import svm.msoffice.docx.printer.Printer;
  */
 public class PrinterFactory {
     
-    public static <T> Printer<T> getInstance(String input, FileOutputStream output) {
+    public static <T> Printer<T> getInstance(String input) {
         
         Item item = new Item();
         item.setName("Screwdriver");
         item.setDescription("Handy screwdriver");
         item.setPrice(new BigDecimal("12.6586"));
         item.setManufacturer("Some factory lmtd");
+        item.setSerialNumber("15358-548");
         item.setReleaseDate(LocalDate.of(2012, 3, 25));
         item.setWeight("0.5 kg");
         item.setHeight("20 mm");
@@ -30,8 +31,7 @@ public class PrinterFactory {
         try {
             printer = new Printer(
                     item,
-                    new FileInputStream(input),
-                    output
+                    new FileInputStream(input)
             );
         } catch(IOException e) {
             throw new RuntimeException(e);
@@ -40,18 +40,9 @@ public class PrinterFactory {
         return printer;
         
     }
-    
-    public static <T> Printer<T> getInstance(String input) {
-        return getInstance(input, null);
-    }
-    
+        
     public static <T> Printer<T> getInstance() {
-
-        try {
-            return getInstance("src/test/resources/template.docx", new FileOutputStream("target/output.docx"));
-        } catch(IOException e) {
-            throw new RuntimeException(e);
-        }
+        return getInstance("src/test/resources/template.docx");
         
     }
     

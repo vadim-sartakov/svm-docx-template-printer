@@ -4,22 +4,36 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import svm.msoffice.docx.printer.Printer;
-import static svm.msoffice.docx.printer.Printer.FORMAT_PATTERN;
-import static svm.msoffice.docx.printer.Printer.FORMAT_SCOPE_PATTERN;
-import static svm.msoffice.docx.printer.Printer.PARAMETER_PATTERN;
-import static svm.msoffice.docx.printer.Printer.PARAMETER_SCOPE_PATTERN;
 
 /**
  *
  * @author sartakov
  */
 public class Parser {
+    
+    /**
+     * Format and parameters
+     */
+    public final static Pattern FORMAT_SCOPE_PATTERN = Pattern.compile("\\[(\\{[^$]*\\}) +(.+)\\]");
+    /**
+     * Parameters only, without format scope
+     */
+    public final static Pattern PARAMETER_SCOPE_PATTERN = Pattern.compile("(\\$\\{([\\w.\\[\\]]+)\\})(?!.*\\])");
+    /**
+     * Format - value
+     */
+    public final static Pattern FORMAT_PATTERN = Pattern.compile("([\\w-]+): *\"?([\\wА-Яа-я .']+)\"?");
+    /**
+     * Parameter - content
+     */
+    public final static Pattern PARAMETER_PATTERN = Pattern.compile("\\$\\{([\\w.\\[\\]]+)\\}");
     
     private final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);
     private final Printer<?> printer;

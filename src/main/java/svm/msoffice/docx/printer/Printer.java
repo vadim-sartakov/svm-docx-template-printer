@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import svm.msoffice.docx.printer.impl.Converter;
 import svm.msoffice.docx.printer.impl.Parser;
 import svm.msoffice.docx.printer.impl.Template;
+import svm.msoffice.docx.printer.impl.Utils;
 import svm.msoffice.docx.printer.impl.XWPFRunNormalizer;
 
 /**
@@ -46,32 +47,15 @@ public class Printer<T> {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);
     
-    private T object;
-    private XWPFDocument templateFile;
-    private OutputStream outputStream;
+    private final T object;
+    private final Map<String, Converter> converters;
+    private final Map<String, Object> variables = new HashMap<>();
+    private final XWPFDocument templateFile;    
     
-    /**
-     * Format and parameters
-     */
-    public final static Pattern FORMAT_SCOPE_PATTERN = Pattern.compile("\\[(\\{[^$]*\\}) +(.+)\\]");
-    /**
-     * Parameters only, without format scope
-     */
-    public final static Pattern PARAMETER_SCOPE_PATTERN = Pattern.compile("(\\$\\{([\\w.\\[\\]]+)\\})(?!.*\\])");
-    /**
-     * Format - value
-     */
-    public final static Pattern FORMAT_PATTERN = Pattern.compile("([\\w-]+): *\"?([\\wА-Яа-я .']+)\"?");
-    /**
-     * Parameter - content
-     */
-    public final static Pattern PARAMETER_PATTERN = Pattern.compile("\\$\\{([\\w.\\[\\]]+)\\}");
     public final static Pattern TABLE_CELL_PATTERN = Pattern.compile("\\{([^$\\.:\\}]+)\\.");
     
     private XWPFParagraph paragraph;
-    private Map<String, Converter> converters;
     private Map<Integer, Template> templates;
-    private final Map<String, Object> variables = new HashMap<>();
     private int index;
     private int tableRowIndex;
     
@@ -83,27 +67,29 @@ public class Printer<T> {
         
     public Printer(T object,
             InputStream inputStream,
-            OutputStream outputStream,
-            Map<String, Converter> converters) throws IOException {
+            Map<String, Converter> converters) {
         
         this.object = object;
-        this.templateFile = new XWPFDocument(new BufferedInputStream(inputStream));
-        this.outputStream = outputStream;
+        try {
+            this.templateFile = new XWPFDocument(new BufferedInputStream(inputStream));
+        } catch (IOException e) {
+            LOGGER.error("Failed to open file", e);
+            throw new RuntimeException(e);
+        }
+        
         this.converters = converters;
         
     }
         
-    public Printer (T object, InputStream inputStream, OutputStream outputStream) throws IOException {
-        this(object, inputStream, outputStream, null);
+    public Printer (T object, InputStream inputStream) {
+        this(object, inputStream, null);
     }
             
-    public void print() throws Exception {
-        
+    public void print(OutputStream outputStream) {
         normalizeParameters(templateFile.getParagraphs());
-        parseTemplates();
         renderInlineTemplates();
         renderTables();
-        
+        save(outputStream);
     }
     
     private void normalizeParameters(List<XWPFParagraph> paragraphs) {
@@ -112,14 +98,8 @@ public class Printer<T> {
             new XWPFRunNormalizer(currentParagraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
         });
     }
-    
-    private void parseTemplates() {
-        templateFile.getParagraphs().forEach(currentParagraph -> {
-            new Parser(this, currentParagraph).parse();
-        });
-    }
-    
-    private void renderInlineTemplates() throws Exception {
+        
+    private void renderInlineTemplates() {
                 
         for (XWPFParagraph currentParagraph : templateFile.getParagraphs()) {
             this.paragraph = currentParagraph;            
@@ -128,43 +108,19 @@ public class Printer<T> {
         
     }
         
-    private void renderTemplatesOfParagraph() throws Exception {
-        
-        if (!PARAMETER_PATTERN.matcher(paragraph.getText()).find())
-            return;
-            
-        this.templates = new HashMap<>();
-
-        try {
-            parseTemplates();
-        } catch (Exception e) {
-            LOGGER.error("Failed to parse parameters", e);
-            throw e;
-        }
-
-        renderTemplates();
-        
+    private void renderTemplatesOfParagraph() {
+        this.templates = new Parser(this, paragraph).parse();
+        renderTemplates();        
     }
         
     private void renderTemplates() {
-        
-        if (templates.isEmpty())
-            return;
-        
-        index = 0;
-        for (XWPFRun currentRun : paragraph.getRuns()) {
-        
-            Template currentTemplate = templates.get(index);
-            if (currentTemplate != null)
-                currentTemplate.render();
-            
-            index++;
-        
-        }
-        
+        templates.entrySet().forEach(entry -> {
+            XWPFRun run = paragraph.getRuns().get(entry.getKey());
+            run.setText(entry.getValue().render(), 0);
+        });     
     }
                         
-    private void renderTables() throws Exception {
+    private void renderTables() {
         
         for (XWPFTable currentTable : templateFile.getTables()) {
             table = currentTable;
@@ -179,7 +135,7 @@ public class Printer<T> {
      * Any column in first section (before first dot)
      * should contain table name to iterate.
      */
-    private void getNameAndValue() throws Exception {
+    private void getNameAndValue() {
         
         index = 0;
         for (XWPFTableRow currentRow : table.getRows()) {
@@ -224,7 +180,7 @@ public class Printer<T> {
     
     }
     
-    private void populateRows() throws Exception {
+    private void populateRows() {
                         
         for (int i = 0; i < list.size() - 1; i++) {
             XWPFTableRow newRow = table.createRow();
@@ -242,27 +198,15 @@ public class Printer<T> {
             XWPFTableCell destinationCell = destination.getCell(cellIndex);
             destinationCell.getCTTc().setTcPr(sourceCell.getCTTc().getTcPr());
             
-            copyParagraph(sourceCell.getParagraphArray(0), destinationCell.getParagraphs().get(0));
+            Utils.copyParagraph(sourceCell.getParagraphArray(0), destinationCell.getParagraphs().get(0));
             
             cellIndex++;
             
         }
         
     }
-    
-    private void copyParagraph(XWPFParagraph sourceParagraph, XWPFParagraph destinationParagraph) {
-        destinationParagraph.getCTP().setPPr(sourceParagraph.getCTP().getPPr());
-        sourceParagraph.getRuns().forEach(sourceRun -> {
-            copyRun(sourceRun, destinationParagraph.createRun());
-        });
-    }
-    
-    private void copyRun(XWPFRun sourceRun, XWPFRun destinationRun) {
-        destinationRun.getCTR().setRPr(sourceRun.getCTR().getRPr());
-        destinationRun.setText(sourceRun.getText(0), 0);
-    }
-        
-    private void renderRows() throws Exception {
+                
+    private void renderRows() {
                      
         tableRowIndex = 0;
         for (XWPFTableRow currentRow : table.getRows()) {
@@ -270,7 +214,7 @@ public class Printer<T> {
             variables.put("rowNumber", tableRowIndex + 1);
             
             // Bypassing headers
-            if (!PARAMETER_PATTERN.matcher(currentRow.getCell(0).getText()).find())
+            if (!TABLE_CELL_PATTERN.matcher(currentRow.getCell(0).getText()).find())
                 continue;
             
             row = currentRow;
@@ -282,7 +226,7 @@ public class Printer<T> {
         
     }
     
-    private void renderCells() throws Exception {
+    private void renderCells() {
                 
         for (XWPFTableCell cell : row.getTableCells()) {
             
@@ -299,7 +243,7 @@ public class Printer<T> {
         
     }
     
-    private void insertIndexInParameters() throws Exception {
+    private void insertIndexInParameters() {
                 
         for (XWPFRun currentRun : paragraph.getRuns()) {
             

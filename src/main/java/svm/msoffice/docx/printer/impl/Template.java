@@ -116,7 +116,7 @@ public class Template {
     }
 
     private void replaceFormatWithValues() {
-        Matcher scopeMatcher = Printer.FORMAT_SCOPE_PATTERN.matcher(renderResult);
+        Matcher scopeMatcher = Parser.FORMAT_SCOPE_PATTERN.matcher(renderResult);
         if (scopeMatcher.find())
             renderResult = scopeMatcher.group(2);
     }
