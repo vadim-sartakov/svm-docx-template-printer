@@ -10,16 +10,10 @@ import java.io.OutputStream;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 public class TemplateHolder implements AutoCloseable {
-    
-    private static final String TEMPLATE_PATH = "src/test/resources/template.docx";
-    
+        
     private final XWPFDocument document;
     private final BufferedInputStream input;
-    
-    public TemplateHolder() {
-        this(TEMPLATE_PATH);
-    }
-    
+        
     public TemplateHolder(String inputFilePath) {
     
         try {

@@ -6,7 +6,10 @@
 package svm.msoffice.docx.printer.impl;
 
 import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import svm.msoffice.docx.printer.Printer;
 
 /**
@@ -15,13 +18,12 @@ import svm.msoffice.docx.printer.Printer;
  */
 public class Parameter {
     
-    private final Printer printer;
+    private final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);
     private final String property;
     private final Object value;
 
     public Parameter(Printer<?> printer, String property) {
 
-        this.printer = printer;
         this.property = property;
 
         Object variableValue = printer.getVariables().get(property);
@@ -34,7 +36,7 @@ public class Parameter {
         try {
             retrievedValue = PropertyUtils.getNestedProperty(printer.getObject(), property);            
         } catch (Exception e) {
-            Printer.LOGGER.warn("Failed to get property {}", property);
+            LOGGER.warn("Failed to get property {}", property);
         }
         
         Map<String, Converter> converters = printer.getConverters();
@@ -47,16 +49,41 @@ public class Parameter {
 
     }
 
-    public Printer getPrinter() {
-        return printer;
-    }
-
     public String getProperty() {
         return property;
     }
     
     public Object getValue() {
         return value;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.property);
+        hash = 53 * hash + Objects.hashCode(this.value);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Parameter other = (Parameter) obj;
+        if (!Objects.equals(this.property, other.property)) {
+            return false;
+        }
+        if (!Objects.equals(this.value, other.value)) {
+            return false;
+        }
+        return true;
     }
     
 }

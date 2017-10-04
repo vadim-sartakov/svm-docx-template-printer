@@ -11,10 +11,10 @@ package svm.msoffice.docx.printer;
  */
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -32,7 +32,7 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import svm.msoffice.docx.printer.impl.Converter;
-import svm.msoffice.docx.printer.impl.Parameter;
+import svm.msoffice.docx.printer.impl.Parser;
 import svm.msoffice.docx.printer.impl.Template;
 import svm.msoffice.docx.printer.impl.XWPFRunNormalizer;
 
@@ -43,7 +43,7 @@ import svm.msoffice.docx.printer.impl.XWPFRunNormalizer;
  */
 public class Printer<T> {
     
-    public final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);
     
     private T object;
     private XWPFDocument templateFile;
@@ -93,32 +93,42 @@ public class Printer<T> {
         this.converters = converters;
         
     }
-    
+        
     public Printer (T object, InputStream inputStream, OutputStream outputStream) throws IOException {
         this(object, inputStream, outputStream, null);
     }
             
     public void print() throws Exception {
+        
+        normalizeParameters(templateFile.getParagraphs());
+        parseTemplates();
         renderInlineTemplates();
         renderTables();
-        templateFile.write(new BufferedOutputStream(outputStream));
-    }
-            
-    private void renderInlineTemplates() throws Exception {
-                
-        for (XWPFParagraph currentParagraph : templateFile.getParagraphs()) {
-            
-            this.paragraph = currentParagraph;
-            
-            new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
-            new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
-            
-            renderTemplatesOfParagraph();
-            
-        } 
         
     }
     
+    private void normalizeParameters(List<XWPFParagraph> paragraphs) {
+        paragraphs.forEach(currentParagraph -> {
+            new XWPFRunNormalizer(currentParagraph, "\\$\\{[^\\{]+\\}").normalize();
+            new XWPFRunNormalizer(currentParagraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
+        });
+    }
+    
+    private void parseTemplates() {
+        templateFile.getParagraphs().forEach(currentParagraph -> {
+            new Parser(this, currentParagraph).parse();
+        });
+    }
+    
+    private void renderInlineTemplates() throws Exception {
+                
+        for (XWPFParagraph currentParagraph : templateFile.getParagraphs()) {
+            this.paragraph = currentParagraph;            
+            renderTemplatesOfParagraph();
+        } 
+        
+    }
+        
     private void renderTemplatesOfParagraph() throws Exception {
         
         if (!PARAMETER_PATTERN.matcher(paragraph.getText()).find())
@@ -136,92 +146,7 @@ public class Printer<T> {
         renderTemplates();
         
     }
-    
-    private void parseTemplates() throws Exception {
-                
-        index = 0;
-        for (XWPFRun currentRun : paragraph.getRuns()) {
-            
-            run = currentRun;
-            String runText = run.getText(0);
-            
-            template = parseFormattedParameters(runText);
-            if (template != null)
-                templates.put(index, template);
-                        
-            parseIndividualParameters(runText);
-            
-            index++;
-            
-        }
         
-    }
-    
-    private Template parseFormattedParameters(String templateString) throws Exception {
-                                         
-        Matcher scopeMatcher = FORMAT_SCOPE_PATTERN.matcher(templateString);
-        if (!scopeMatcher.find())
-            return null;
-
-        String formatString = scopeMatcher.group(1);
-        String contentString = scopeMatcher.group(2);
-        
-        Template intermediateTemplate = new Template(run, scopeMatcher.group(0));
-        parseFormats(intermediateTemplate, formatString);
-        
-        String contentWithParamsOnly = contentString.replaceAll(FORMAT_SCOPE_PATTERN.pattern(), "");      
-        intermediateTemplate.parameters = parseParameters(contentWithParamsOnly);
-        intermediateTemplate.enclosingTemplate = parseFormattedParameters(contentString);
-        
-        return intermediateTemplate;
-
-    }
-    
-    private void parseFormats(Template intermediateTemplate, String formatString) {
-        
-        Matcher matcher = FORMAT_PATTERN.matcher(formatString);
-        while (matcher.find()) {
-
-            String name = matcher.group(1);
-            String value = matcher.group(2);
-
-            if (name.equals("width"))
-                intermediateTemplate.width = Integer.parseInt(value);
-            else
-                intermediateTemplate.format = new SimpleEntry<>(name, value);
-
-        }
-        
-    }
-    
-    private Map<String, Parameter> parseParameters(String templateString) throws Exception {
-        
-        Map<String, Parameter> result = new HashMap<>();
-        
-        Matcher matcher = PARAMETER_PATTERN.matcher(templateString);
-        while (matcher.find())
-            result.put(matcher.group(0), new Parameter(this, matcher.group(1)));
-        
-        return result;
-        
-    }
-    
-    private void parseIndividualParameters(String templateString) throws Exception {
-                
-        Matcher matcher = PARAMETER_SCOPE_PATTERN.matcher(templateString);
-        if (!matcher.find())
-            return;
-        
-        Map<String, Parameter> parameters = parseParameters(templateString);
-
-        if (parameters.size() > 0) {
-            template = new Template(run, matcher.group(0));
-            template.parameters = parameters;
-            templates.put(index, template);
-        }
-                
-    }
-    
     private void renderTemplates() {
         
         if (templates.isEmpty())
@@ -361,7 +286,9 @@ public class Printer<T> {
     
     private void renderCells() throws Exception {
                 
-        for (XWPFTableCell cell : row.getTableCells()) {            
+        for (XWPFTableCell cell : row.getTableCells()) {
+            
+            normalizeParameters(cell.getParagraphs());
             for (XWPFParagraph currentParagraph : cell.getParagraphs()) {
                 
                 paragraph = currentParagraph;
@@ -375,10 +302,7 @@ public class Printer<T> {
     }
     
     private void insertIndexInParameters() throws Exception {
-        
-        new XWPFRunNormalizer(paragraph, "\\$\\{.+\\}").normalize();
-        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
-        
+                
         for (XWPFRun currentRun : paragraph.getRuns()) {
             
             String runText = currentRun.getText(0);
@@ -393,6 +317,29 @@ public class Printer<T> {
         
     }
     
+    public void save(OutputStream outputStream) {
+        
+        try {
+            templateFile.write(new BufferedOutputStream(outputStream));
+        } catch (IOException e) {
+            LOGGER.error("Failed to save output file", e);
+        } finally {
+            IOUtils.closeQuietly(templateFile);
+            IOUtils.closeQuietly(outputStream);
+        }
+        
+    }
+    
+    public void save(String fileName) {
+                
+        try {
+            save(new FileOutputStream(fileName));
+        } catch (IOException e) {
+            LOGGER.error("Error creating file " + fileName, e);
+        }
+        
+    }
+    
     public T getObject() {
         return object;
     }
@@ -403,6 +350,10 @@ public class Printer<T> {
 
     public Map<String, Converter> getConverters() {
         return converters;
+    }
+
+    public XWPFDocument getTemplateFile() {
+        return templateFile;
     }
     
 }

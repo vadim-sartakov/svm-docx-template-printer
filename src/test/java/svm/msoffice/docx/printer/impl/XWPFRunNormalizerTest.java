@@ -29,7 +29,7 @@ public class XWPFRunNormalizerTest {
     
     private void normalizeAndSave() {
         
-        try (TemplateHolder templateHolder = new TemplateHolder()) {
+        try (TemplateHolder templateHolder = new TemplateHolder("src/test/resources/normalizer/template.docx")) {
             
             paragraph = templateHolder.getDocument().getParagraphs().get(0);
             sourceParagraphText = paragraph.getText();
@@ -62,13 +62,13 @@ public class XWPFRunNormalizerTest {
     private void checkParameterRunConsistency() {
 
         List<XWPFRun> runs = paragraph.getRuns();
-        assertEquals(runs.get(2).getText(0), "[{width: 20; number: \"0.00\"} ${price}]");
-        assertEquals(runs.get(6).getText(0), "${name}");
-        assertEquals(runs.get(8).getText(0), "${description}");
-        assertEquals(runs.get(12).getText(0), "[{width: 20} ${manufacturer} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]");
-        assertEquals(runs.get(17).getText(0), "${weight}");
-        assertEquals(runs.get(19).getText(0), "${height}");
-        assertEquals(runs.get(21).getText(0), "${width}");
+        assertEquals("[{width: 20; number: \"0.00\"} ${price}]", runs.get(2).getText(0));
+        assertEquals("${name}", runs.get(6).getText(0));
+        assertEquals("${description}", runs.get(8).getText(0));
+        assertEquals("[{width: 20} ${manufacturer} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]", runs.get(12).getText(0));
+        assertEquals("${weight}", runs.get(17).getText(0));
+        assertEquals("${height}", runs.get(19).getText(0));
+        assertEquals("${width}", runs.get(21).getText(0));
         
     }
     

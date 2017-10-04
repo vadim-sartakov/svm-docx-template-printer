@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
@@ -125,5 +126,42 @@ public class Template {
         if (width != null)
             renderResult = StringUtils.center(renderResult, width);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 13 * hash + Objects.hashCode(this.format);
+        hash = 13 * hash + Objects.hashCode(this.width);
+        hash = 13 * hash + Objects.hashCode(this.parameters);
+        hash = 13 * hash + Objects.hashCode(this.enclosingTemplate);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Template other = (Template) obj;
+        if (!Objects.equals(this.format, other.format)) {
+            return false;
+        }
+        if (!Objects.equals(this.width, other.width)) {
+            return false;
+        }
+        if (!Objects.equals(this.parameters, other.parameters)) {
+            return false;
+        }
+        if (!Objects.equals(this.enclosingTemplate, other.enclosingTemplate)) {
+            return false;
+        }
+        return true;
+    }       
     
 }
