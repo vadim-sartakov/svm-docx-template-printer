@@ -33,7 +33,7 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import svm.msoffice.docx.printer.impl.Converter;
-import svm.msoffice.docx.printer.impl.Parser;
+import svm.msoffice.docx.printer.impl.TemplateParser;
 import svm.msoffice.docx.printer.impl.Template;
 import svm.msoffice.docx.printer.impl.Utils;
 import svm.msoffice.docx.printer.impl.XWPFRunNormalizer;
@@ -94,8 +94,7 @@ public class Printer<T> {
     
     private void normalizeParameters(List<XWPFParagraph> paragraphs) {
         paragraphs.forEach(currentParagraph -> {
-            new XWPFRunNormalizer(currentParagraph, "\\$\\{[^\\{]+\\}").normalize();
-            new XWPFRunNormalizer(currentParagraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
+            XWPFRunNormalizer.normalizeParameters(currentParagraph);
         });
     }
         
@@ -109,7 +108,7 @@ public class Printer<T> {
     }
         
     private void renderTemplatesOfParagraph() {
-        this.templates = new Parser(this, paragraph).parse();
+        this.templates = new TemplateParser(this, paragraph).parse();
         renderTemplates();        
     }
         

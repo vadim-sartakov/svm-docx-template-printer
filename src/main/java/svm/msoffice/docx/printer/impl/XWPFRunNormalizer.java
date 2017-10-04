@@ -14,29 +14,28 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
  * @author sartakov
  */
 public class XWPFRunNormalizer {
-    
+        
     private final XWPFParagraph paragraph;
     private final Pattern pattern;   
     private final Map<MatchPair, String> matches = new HashMap<>();
     
     private XWPFRun firstRun, lastRun;
     private int firstIndex, lastIndex;
-    
-    public XWPFRunNormalizer(XWPFParagraph paragraph, String regex) {
-        this(paragraph, regex, ".+");
-    }
-            
+                
     /**
      * 
      * @param paragraph
      * @param regex
-     * @param boundSplitRestRegex - regex for capturing rest in the bound splitting procedure.
      */
     public XWPFRunNormalizer(XWPFParagraph paragraph,
-            String regex,
-            String boundSplitRestRegex) {
+            String regex) {
         this.paragraph = paragraph;
         this.pattern = Pattern.compile(regex);
+    }
+    
+    public static void normalizeParameters(XWPFParagraph paragraph) {
+        new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
+        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
     }
     
     public void normalize() {

@@ -18,7 +18,7 @@ import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
  *
  * @author sartakov
  */
-public class ParserTest {
+public class TemplateParserTest {
     
     private final Printer<Item> printer = PrinterFactory
             .getInstance("src/test/resources/parser/template.docx");
@@ -29,7 +29,7 @@ public class ParserTest {
         Map<Integer, Template> correctTemplates = ExpectedValuesFactory.getCorrectTemplates();
         
         XWPFParagraph paragraph = printer.getTemplateFile().getParagraphs().get(0);
-        Map<Integer, Template> parsedTemplates = new Parser(printer, paragraph).parse();
+        Map<Integer, Template> parsedTemplates = new TemplateParser(printer, paragraph).parse();
             
         assertEquals(correctTemplates.size(), parsedTemplates.size());
         

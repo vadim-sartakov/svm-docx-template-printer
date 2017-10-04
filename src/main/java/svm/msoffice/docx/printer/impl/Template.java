@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import svm.msoffice.docx.printer.Printer;
 
 /**
  *
@@ -35,7 +34,7 @@ public class Template {
     }
 
     /**
-     * Renders template into the specified run.
+     * Renders template and returns render result.
      * @return rendered string.
      */
     public String render() {
@@ -116,7 +115,7 @@ public class Template {
     }
 
     private void replaceFormatWithValues() {
-        Matcher scopeMatcher = Parser.FORMAT_SCOPE_PATTERN.matcher(renderResult);
+        Matcher scopeMatcher = TemplateParser.FORMAT_SCOPE_PATTERN.matcher(renderResult);
         if (scopeMatcher.find())
             renderResult = scopeMatcher.group(2);
     }

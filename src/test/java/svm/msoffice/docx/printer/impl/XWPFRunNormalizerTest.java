@@ -36,10 +36,7 @@ public class XWPFRunNormalizerTest {
             
         paragraph = document.getParagraphs().get(0);
         sourceParagraphText = paragraph.getText();
-
-        new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
-        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
-
+        XWPFRunNormalizer.normalizeParameters(paragraph);
         document.write(new FileOutputStream("target/output.docx"));
         
     }

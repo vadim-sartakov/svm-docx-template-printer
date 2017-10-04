@@ -16,7 +16,7 @@ import svm.msoffice.docx.printer.Printer;
  *
  * @author sartakov
  */
-public class Parser {
+public class TemplateParser {
     
     /**
      * Format and parameters
@@ -43,7 +43,7 @@ public class Parser {
     private int index;
     private Template template;
     
-    public Parser(Printer<?> printer, XWPFParagraph paragraph) {
+    public TemplateParser(Printer<?> printer, XWPFParagraph paragraph) {
         this.printer = printer;
         this.paragraph = paragraph;
     }
