@@ -8,7 +8,7 @@ package svm.msoffice.docx.printer.impl;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -26,9 +26,9 @@ public class Template {
     private final XWPFRun run;
     private String templateString;
     private String renderResult;
-    public AbstractMap.SimpleEntry<String, String> format;
+    public SimpleEntry<String, String> format;
     public Integer width;
-    public Map<String, Parameter> parameters;
+    public Map<String, Object> parameterValues;
     public Template enclosingTemplate;
 
     public Template(XWPFRun run, String templateString) {
@@ -61,7 +61,7 @@ public class Template {
 
     private String getRendered() {
 
-        parameters.entrySet().forEach(parameterEntry ->
+        parameterValues.entrySet().forEach(parameterEntry ->
                 renderParameter(parameterEntry));
 
         replaceFormatWithValues();
@@ -72,12 +72,12 @@ public class Template {
 
     }
 
-    private void renderParameter(Map.Entry<String, Parameter> parameterEntry) {
-        String formattedValue = applyFormat(parameterEntry.getValue());
+    private void renderParameter(Map.Entry<String, Object> parameterEntry) {
+        String formattedValue = applyFormat(parameterEntry);
         renderResult = renderResult.replaceAll(Pattern.quote(parameterEntry.getKey()), formattedValue);
     }
 
-    private String applyFormat(Parameter parameter) {
+    private String applyFormat(Map.Entry<String, Object> parameter) {
 
         // Leaving this apostrophes for decoupling formats and
         // values in one string if value is empty.
@@ -132,7 +132,7 @@ public class Template {
         int hash = 7;
         hash = 13 * hash + Objects.hashCode(this.format);
         hash = 13 * hash + Objects.hashCode(this.width);
-        hash = 13 * hash + Objects.hashCode(this.parameters);
+        hash = 13 * hash + Objects.hashCode(this.parameterValues);
         hash = 13 * hash + Objects.hashCode(this.enclosingTemplate);
         return hash;
     }
@@ -155,7 +155,7 @@ public class Template {
         if (!Objects.equals(this.width, other.width)) {
             return false;
         }
-        if (!Objects.equals(this.parameters, other.parameters)) {
+        if (!Objects.equals(this.parameterValues, other.parameterValues)) {
             return false;
         }
         if (!Objects.equals(this.enclosingTemplate, other.enclosingTemplate)) {

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  *
@@ -18,6 +19,7 @@ public class PrinterFactory {
         item.setDescription("Handy screwdriver");
         item.setPrice(new BigDecimal("12.65"));
         item.setManufacturer("Some factory lmtd");
+        item.setReleaseDate(LocalDate.of(2012, 3, 25));
         item.setWeight("0.5 kg");
         item.setHeight("20 mm");
         item.setWidth("500 mm");
