@@ -1,15 +1,14 @@
 package svm.msoffice.docx.printer.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import static svm.msoffice.docx.printer.Printer.TABLE_CELL_PATTERN;
 
 /**
  *
@@ -17,68 +16,50 @@ import static svm.msoffice.docx.printer.Printer.TABLE_CELL_PATTERN;
  */
 public class Table {
     
+    private final XWPFTable xwpfTable;
     private final String name;
-    private final List<Object> values;
-    private final int startIndex;
-    private final List<Template> rows;
-    private final Map<String, Object> variables = new HashMap<>();
+    private final DataHolder dataHolder;
+    private final int templateRowIndex;
+    private final List<Row> rows = new ArrayList<>();   
     
-    private XWPFTable table;
-    private int templateRowIndex, tableRowIndex;
-    private XWPFTableRow row;
-    private XWPFParagraph paragraph;
+    private int tableRowIndex;
+    private Row row;
+    private XWPFTableRow xwpfRow;
 
-    public Table(String name, List<Object> values, int startIndex, List<Template> rows) {
+    public Table(XWPFTable xwpfTable, String name, DataHolder dataHolder, int templateRowIndex) {
+        this.xwpfTable = xwpfTable;
         this.name = name;
-        this.values = values;
-        this.startIndex = startIndex;
-        this.rows = rows;
+        this.dataHolder = dataHolder;
+        this.templateRowIndex = templateRowIndex;
     }
     
-    public void render(XWPFTable table) {
-        this.table = table;
-        populateRows();
+    public void render() {
+        populateTemplateRows();
         renderRows();        
     }
     
-    private void populateRows() {
+    private void populateTemplateRows() {
                         
-        for (int i = 0; i < values.size() - 1; i++) {
-            XWPFTableRow newRow = table.createRow();
-            copyRow(table.getRow(templateRowIndex), newRow);
+        for (int index = templateRowIndex + 1; index <= rows.size(); index++) {
+            
+            XWPFTableRow newXwpfRow = index > xwpfTable.getRows().size() - 1 ?
+                    xwpfTable.createRow() :
+                    xwpfTable.insertNewTableRow(index);
+            Utils.copyRow(xwpfTable.getRow(templateRowIndex), newXwpfRow);
+                        
         }
             
     }
-    
-    // Applying ctr copying leads to unexpected results. So, copying by hand.
-    private void copyRow(XWPFTableRow source, XWPFTableRow destination) {
-        
-        int cellIndex = 0;
-        for (XWPFTableCell sourceCell : source.getTableCells()) {
-            
-            XWPFTableCell destinationCell = destination.getCell(cellIndex);
-            destinationCell.getCTTc().setTcPr(sourceCell.getCTTc().getTcPr());
-            
-            Utils.copyParagraph(sourceCell.getParagraphArray(0), destinationCell.getParagraphs().get(0));
-            
-            cellIndex++;
-            
-        }
-        
-    }
-                
+                    
+    // TODO: move to parser
     private void renderRows() {
                      
         tableRowIndex = 0;
-        for (XWPFTableRow currentRow : table.getRows()) {
+        for (Row currentRow : rows) {
                         
-            variables.put("rowNumber", tableRowIndex + 1);
-            
-            // Bypassing headers
-            if (!TABLE_CELL_PATTERN.matcher(currentRow.getCell(0).getText()).find())
-                continue;
-            
+            dataHolder.putVariable("rowNumber", tableRowIndex + 1);
             row = currentRow;
+            xwpfRow = xwpfTable.getRow(row.index);
             renderCells();
             
             tableRowIndex++;
@@ -87,35 +68,67 @@ public class Table {
         
     }
     
-    private void renderCells() {
-                
-        for (XWPFTableCell cell : row.getTableCells()) {
-            
-            for (XWPFParagraph currentParagraph : cell.getParagraphs()) {
-                
-                paragraph = currentParagraph;
-                XWPFRunNormalizer.normalizeParameters(paragraph);
-                
-                insertIndexInParameters();
-                renderTemplatesOfParagraph();
-                
-            }
-        }
-        
+    private void renderCells() {      
+        for (Cell cell : row.cells)
+            cell.render(xwpfRow.getCell(cell.index));        
     }
     
-    private void insertIndexInParameters() {
+    
+    
+    public Row addRow(int index) {
+        Row newRow = new Row(index);
+        rows.add(newRow);
+        return newRow;
+    }
+    
+    public class Row {
+        
+        final int index;
+        final List<Cell> cells = new ArrayList<>();
+        
+        public Row(int index) {
+            this.index = index;
+        }
+        
+        public Cell addCell(int index, Template template) {
+            Cell cell = new Cell(index, template);
+            cells.add(cell);
+            return cell;
+        }
                 
-        for (XWPFRun currentRun : paragraph.getRuns()) {
-            
-            String runText = currentRun.getText(0);
-            Matcher matcher = TABLE_CELL_PATTERN.matcher(runText);
-            if (!matcher.find())
-                continue;
-
-            currentRun.setText(runText.replaceAll("\\{" + tableName,
-                    "\\{" + tableName + "[" + tableRowIndex + "]"), 0);
-            
+    }
+    
+    public class Cell {
+        
+        final int index;
+        final Map<Integer, Template> templates;
+        
+        public Cell(int index, Template template) {
+            this.index = index;
+            this.templates = new HashMap<>();
+            this.templates.put(0, template);
+        }
+        
+        public Cell(int index, Map<Integer, Template> templates) {
+            this.index = index;
+            this.templates = templates;
+        }
+        
+        void render(XWPFTableCell xwpfTableCell) {
+            xwpfTableCell.getParagraphs().forEach(paragraph -> {
+                XWPFRunNormalizer.normalizeParameters(paragraph);
+                insertIndexInParameters(paragraph);
+                Template.renderTemplates(templates, paragraph);
+            });
+        }
+        
+        // TODO: move to parser
+        private void insertIndexInParameters(XWPFParagraph paragraph) {
+            for (XWPFRun currentRun : paragraph.getRuns()) {
+                String runText = currentRun.getText(0);
+                currentRun.setText(runText.replaceAll("\\{" + name,
+                        "\\{" + name + "[" + tableRowIndex + "]"), 0);
+            }
         }
         
     }

@@ -132,7 +132,7 @@ public class XWPFRunNormalizer {
     private void runBackwardLoop(String matchedString) {
         
         StringBuilder levelTwoBuffer = new StringBuilder();
-        for (firstIndex = lastIndex; firstIndex > 0; firstIndex--) {
+        for (firstIndex = lastIndex; firstIndex >= 0; firstIndex--) {
             
             firstRun = paragraph.getRuns().get(firstIndex);
             levelTwoBuffer.insert(0, firstRun.getText(0));

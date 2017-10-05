@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import svm.msoffice.docx.printer.impl.Template;
 
@@ -18,49 +19,36 @@ public class ExpectedValuesFactory {
         Map<Integer, Template> correctTemplates = new HashMap<>();
         Template template, enclosingTemplate;
         
-        template = new Template("${name}");
-        template.parameterValues = new HashMap<>();
-        template.parameterValues.put("${name}", "Screwdriver");
+        template = new Template("${name}", "Screwdriver");
         correctTemplates.put(2, template);
         
         template = new Template("[{width: 20; number: \"0.00\"} ${price}]");
         template.format = new AbstractMap.SimpleEntry<>("number", "0.00");
         template.width = 20;
-        template.parameterValues = new HashMap<>();
         template.parameterValues.put("${price}", new BigDecimal("12.6586"));
         correctTemplates.put(4, template);
                 
-        template = new Template("${description}");
-        template.parameterValues = new HashMap<>();
-        template.parameterValues.put("${description}", "Handy screwdriver");
+        template = new Template("${description}", "Handy screwdriver");
         correctTemplates.put(6, template);
         
         enclosingTemplate = new Template("[{date: \"dd.MM.YYYY\"} ${releaseDate}]");
         enclosingTemplate.format = new AbstractMap.SimpleEntry<>("date", "dd.MM.YYYY");
-        enclosingTemplate.parameterValues = new HashMap<>();
         enclosingTemplate.parameterValues.put("${releaseDate}", LocalDate.of(2012, 3, 25));
         
         template = new Template("[{width: 100} ${manufacturer} ${serialNumber} [{date: \"dd.MM.YYYY\"} ${releaseDate}]]");
         template.width = 100;
-        template.parameterValues = new HashMap<>();
         template.parameterValues.put("${manufacturer}", "Some factory lmtd");
         template.parameterValues.put("${serialNumber}", "15358-548");
         template.enclosingTemplate = enclosingTemplate;
         correctTemplates.put(8, template);
         
-        template = new Template("${weight}");
-        template.parameterValues = new HashMap<>();
-        template.parameterValues.put("${weight}", "0.5 kg");
+        template = new Template("${weight}", "0.5 kg");
         correctTemplates.put(10, template);
         
-        template = new Template("${height}");
-        template.parameterValues = new HashMap<>();
-        template.parameterValues.put("${height}", "20 mm");
+        template = new Template("${height}", "20 mm");
         correctTemplates.put(12, template);
         
-        template = new Template("${width}");
-        template.parameterValues = new HashMap<>();
-        template.parameterValues.put("${width}", "500 mm");
+        template = new Template("${width}", "500 mm");
         correctTemplates.put(14, template);
               
         return correctTemplates;
@@ -94,9 +82,31 @@ public class ExpectedValuesFactory {
         item.setWeight("0.5 kg");
         item.setHeight("20 mm");
         item.setWidth("500 mm");
+        
+        item.history = new LinkedList<>();
+        item.history.add(new Item.History(
+                LocalDate.of(2011, 11, 10),
+                new BigDecimal("5.25"),
+                10)
+        );
+        item.history.add(new Item.History(
+                LocalDate.of(2012, 2, 5),
+                new BigDecimal("6.20"),
+                12)
+        );
+        item.history.add(new Item.History(
+                LocalDate.of(2012, 4, 26),
+                new BigDecimal("6.80"),
+                22)
+        );
+        item.history.add(new Item.History(
+                LocalDate.of(2015, 12, 31),
+                new BigDecimal("7.5"),
+                35)
+        );
 
         return item;
         
     }
-    
+        
 }

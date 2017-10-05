@@ -18,6 +18,7 @@ import svm.msoffice.docx.printer.impl.DataHolder;
 import svm.msoffice.docx.printer.impl.Table;
 import svm.msoffice.docx.printer.impl.TableParser;
 import svm.msoffice.docx.printer.impl.Template;
+import svm.msoffice.docx.printer.impl.TemplateParser;
 import svm.msoffice.docx.printer.impl.XWPFRunNormalizer;
 
 /**
@@ -65,16 +66,15 @@ public class Printer<T> {
     }
         
     private void parseAndRenderInlineTemplates() {       
-        templateFile.getParagraphs().forEach(paragraph -> {     
-            Template.renderTemplates(dataHolder, paragraph);
+        templateFile.getParagraphs().forEach(paragraph -> {
+            Map<Integer, Template> templates = new TemplateParser(dataHolder, paragraph).parse();
+            Template.renderTemplates(templates, paragraph);
         });
     }
                         
     private void parseAndRenderTables() {
         List<Table> tables = new TableParser(templateFile.getTables()).parse();
-        tables.forEach(table -> {
-            //table.render();
-        });
+        tables.forEach(table -> table.render());
     }
         
     public void save(OutputStream outputStream) {

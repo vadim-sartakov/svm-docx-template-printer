@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -22,12 +23,17 @@ public class Template {
     private String renderResult;
     public SimpleEntry<String, String> format;
     public Integer width;
-    public Map<String, Object> parameterValues;
+    public Map<String, Object> parameterValues = new HashMap<>();
     public Template enclosingTemplate;
 
     public Template(String templateString) {
         this.templateString = templateString;
         this.renderResult = templateString;
+    }
+    
+    public Template(String templateString, Object paramValue) {
+        this(templateString);
+        this.parameterValues.put(templateString, paramValue);
     }
 
     /**
@@ -122,8 +128,7 @@ public class Template {
             renderResult = StringUtils.center(renderResult, width);
     }
     
-    public static void renderTemplates(DataHolder dataHolder, XWPFParagraph paragraph) {
-        Map<Integer, Template> templates = new TemplateParser(dataHolder, paragraph).parse();
+    public static void renderTemplates(Map<Integer, Template> templates, XWPFParagraph paragraph) {
         renderTemplates(paragraph, templates);
     }
         

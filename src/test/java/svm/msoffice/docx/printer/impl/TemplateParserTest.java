@@ -8,12 +8,9 @@ package svm.msoffice.docx.printer.impl;
 import java.io.FileInputStream;
 import java.util.Map;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import svm.msoffice.docx.printer.utils.Item;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import svm.msoffice.docx.printer.Printer;
-import svm.msoffice.docx.printer.utils.PrinterFactory;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
 
 /**

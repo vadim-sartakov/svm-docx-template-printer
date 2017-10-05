@@ -2,6 +2,7 @@ package svm.msoffice.docx.printer.utils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Dumb class for filling templates.
@@ -18,6 +19,7 @@ public class Item {
     String weight;
     String width;
     String height;
+    List<History> history;
 
     public String getName() {
         return name;
@@ -89,6 +91,28 @@ public class Item {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public List<History> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<History> history) {
+        this.history = history;
+    }
+
+    public static class History {
+        
+        public LocalDate date;
+        public BigDecimal price;
+        public Integer quantity;
+
+        public History(LocalDate date, BigDecimal price, Integer quantity) {
+            this.date = date;
+            this.price = price;
+            this.quantity = quantity;
+        }
+        
     }
     
 }
