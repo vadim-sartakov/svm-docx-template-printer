@@ -1,10 +1,7 @@
 package svm.msoffice.docx.printer.utils;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import svm.msoffice.docx.printer.Printer;
 
 /**
@@ -15,17 +12,7 @@ public class PrinterFactory {
     
     public static <T> Printer<T> getInstance(String input) {
         
-        Item item = new Item();
-        item.setName("Screwdriver");
-        item.setDescription("Handy screwdriver");
-        item.setPrice(new BigDecimal("12.6586"));
-        item.setManufacturer("Some factory lmtd");
-        item.setSerialNumber("15358-548");
-        item.setReleaseDate(LocalDate.of(2012, 3, 25));
-        item.setWeight("0.5 kg");
-        item.setHeight("20 mm");
-        item.setWidth("500 mm");
-                
+        Item item = ExpectedValuesFactory.getItem();
         Printer<T> printer;
         
         try {

@@ -5,7 +5,9 @@
  */
 package svm.msoffice.docx.printer.impl;
 
+import java.io.FileInputStream;
 import java.util.Map;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import svm.msoffice.docx.printer.utils.Item;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.junit.Test;
@@ -20,16 +22,17 @@ import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
  */
 public class TemplateParserTest {
     
-    private final Printer<Item> printer = PrinterFactory
-            .getInstance("src/test/resources/parser/template.docx");
-    
     @Test
     public void testParse() throws Exception {
                
         Map<Integer, Template> correctTemplates = ExpectedValuesFactory.getCorrectTemplates();
         
-        XWPFParagraph paragraph = printer.getTemplateFile().getParagraphs().get(0);
-        Map<Integer, Template> parsedTemplates = new TemplateParser(printer, paragraph).parse();
+        DataHolder dataHolder = new DataHolder(ExpectedValuesFactory.getItem());
+        XWPFDocument document = new XWPFDocument(
+                new FileInputStream("src/test/resources/parser/template.docx")
+        );
+        XWPFParagraph paragraph = document.getParagraphs().get(0);
+        Map<Integer, Template> parsedTemplates = new TemplateParser(dataHolder, paragraph).parse();
             
         assertEquals(correctTemplates.size(), parsedTemplates.size());
         

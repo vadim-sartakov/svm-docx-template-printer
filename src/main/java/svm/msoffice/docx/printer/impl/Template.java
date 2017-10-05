@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package svm.msoffice.docx.printer.impl;
 
 import java.text.DecimalFormat;
@@ -14,9 +9,11 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 /**
- *
+ * Parsed representation of renderable fragment.
  * @author sartakov
  */
 public class Template {
@@ -123,6 +120,18 @@ public class Template {
     private void applyWidthIfPresent() { 
         if (width != null)
             renderResult = StringUtils.center(renderResult, width);
+    }
+    
+    public static void renderTemplates(DataHolder dataHolder, XWPFParagraph paragraph) {
+        Map<Integer, Template> templates = new TemplateParser(dataHolder, paragraph).parse();
+        renderTemplates(paragraph, templates);
+    }
+        
+    private static void renderTemplates(XWPFParagraph paragraph, Map<Integer, Template> templates) {
+        templates.entrySet().forEach(entry -> {
+            XWPFRun run = paragraph.getRuns().get(entry.getKey());
+            run.setText(entry.getValue().render(), 0);
+        });     
     }
 
     @Override

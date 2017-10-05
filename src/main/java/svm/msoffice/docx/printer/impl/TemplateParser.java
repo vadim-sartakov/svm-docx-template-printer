@@ -36,15 +36,15 @@ public class TemplateParser {
     public final static Pattern PARAMETER_PATTERN = Pattern.compile("\\$\\{([\\w.\\[\\]]+)\\}");
     
     private final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);
-    private final Printer<?> printer;
+    private final DataHolder dataHolder;
     private final XWPFParagraph paragraph;
     private final Map<Integer, Template> templates = new HashMap<>();
     private XWPFRun run;
     private int index;
     private Template template;
     
-    public TemplateParser(Printer<?> printer, XWPFParagraph paragraph) {
-        this.printer = printer;
+    public TemplateParser(DataHolder dataHolder, XWPFParagraph paragraph) {
+        this.dataHolder = dataHolder;
         this.paragraph = paragraph;
     }
     
@@ -120,9 +120,9 @@ public class TemplateParser {
     }
     
     private Object getParameter(String property) {
-        
+                        
         Object value;
-        Object variableValue = printer.getVariables().get(property);
+        Object variableValue = dataHolder.getVariable(property);
         if (variableValue != null) {
             value = variableValue;
             return value;
@@ -130,14 +130,14 @@ public class TemplateParser {
 
         Object retrievedValue = null;
         try {
-            retrievedValue = PropertyUtils.getNestedProperty(printer.getObject(), property);            
+            retrievedValue = PropertyUtils.getNestedProperty(dataHolder.getObject(), property);            
         } catch (Exception e) {
             LOGGER.warn("Failed to get property {}", property);
         }
         
-        Map<String, Converter> converters = printer.getConverters();
+        Map<String, Converter> converters = dataHolder.getConverters();
         if (converters != null) {
-            Converter converter = printer.getConverters().get(property);
+            Converter converter = dataHolder.getConverters().get(property);
             retrievedValue = converter == null ? retrievedValue : converter.convert(retrievedValue);
         }
         

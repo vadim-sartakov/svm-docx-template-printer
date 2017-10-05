@@ -82,4 +82,21 @@ public class ExpectedValuesFactory {
         
     }
     
+    public static Item getItem() {
+
+        Item item = new Item();
+        item.setName("Screwdriver");
+        item.setDescription("Handy screwdriver");
+        item.setPrice(new BigDecimal("12.6586"));
+        item.setManufacturer("Some factory lmtd");
+        item.setSerialNumber("15358-548");
+        item.setReleaseDate(LocalDate.of(2012, 3, 25));
+        item.setWeight("0.5 kg");
+        item.setHeight("20 mm");
+        item.setWidth("500 mm");
+
+        return item;
+        
+    }
+    
 }
