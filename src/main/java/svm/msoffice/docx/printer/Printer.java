@@ -13,7 +13,6 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import svm.msoffice.docx.printer.impl.Converter;
 import svm.msoffice.docx.printer.impl.DataHolder;
 import svm.msoffice.docx.printer.impl.Table;
 import svm.msoffice.docx.printer.impl.TableParser;

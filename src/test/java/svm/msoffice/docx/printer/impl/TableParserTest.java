@@ -14,23 +14,26 @@ import svm.msoffice.docx.printer.utils.Item;
  */
 public class TableParserTest {
     
+    private DataHolder dataHolder;
+    
     @Test
     public void testParse() throws Exception {
         
         XWPFDocument document = new XWPFDocument(
                 new FileInputStream("src/test/resources/table/template.docx")
         );
-        
-        XWPFTable xwpfTable = document.getTableArray(0);
-        
+                
         Item item = ExpectedValuesFactory.getItem();
-        DataHolder dataHolder = new DataHolder(item);
-        TableParser tableParser = new TableParser(dataHolder, xwpfTable);
-        Table actualTable = tableParser.parse();
-        Table expectedTable = ExpectedValuesFactory.getCorrectTable();
+        dataHolder = new DataHolder(item);
         
-        assertEquals(expectedTable, actualTable);
-        
+        assertEquals(ExpectedValuesFactory.getCorrectTableWithHeader(),
+                new TableParser(dataHolder, document.getTableArray(0)).parse());
+        assertEquals(ExpectedValuesFactory.getCorrectTableWithoutHeader(),
+                new TableParser(dataHolder, document.getTableArray(2)).parse());
+        item.getHistory().clear();
+        assertEquals(ExpectedValuesFactory.getEmptyTable(),
+                new TableParser(dataHolder, document.getTableArray(4)).parse());
+                
     }
-    
+        
 }

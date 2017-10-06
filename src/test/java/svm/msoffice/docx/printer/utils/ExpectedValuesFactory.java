@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import svm.msoffice.docx.printer.impl.Table;
 import svm.msoffice.docx.printer.impl.Template;
@@ -110,39 +111,61 @@ public class ExpectedValuesFactory {
         
     }
     
-    public static Table getCorrectTable() {
+    public static Table getCorrectTableWithHeader() {
         
         Item item = getItem();
         
         Table table = new Table();
-        int index = 1;
-        for (Item.History historyItem : item.getHistory()) {
+        fillTableRows(table, item.history, 1);
+        
+        return table;
+        
+    }
+    
+    private static void fillTableRows(Table table, List<Item.History> list, int startIndex) {
+        
+        int index = startIndex;
+        int rowIndex = 1;
+        for (Item.History historyItem : list) {
             
             Table.Row newRow = table.addRow(index);
             Template template;
             
-            template = new Template("${rowNumber}", index);
+            template = new Template("${rowNumber}", rowIndex);
             newRow.addCell(0, template);
             
-            template = new Template("${history[" + (index - 1) + "].date}");
+            template = new Template("${history[" + (rowIndex - 1) + "].date}");
             template.format = new AbstractMap.SimpleEntry<>("date", "dd.MM.yyyy");
-            template.parameterValues.put("${history[" + (index - 1) + "].date}", historyItem.getDate());
+            template.parameterValues.put("${history[" + (rowIndex - 1) + "].date}", historyItem.getDate());
             
             newRow.addCell(1, template);
             
-            template = new Template("${history[" + (index - 1) + "].price}");
+            template = new Template("${history[" + (rowIndex - 1) + "].price}");
             template.format = new AbstractMap.SimpleEntry<>("number", "0.00");
-            template.parameterValues.put("${history[" + (index - 1) + "].price}", historyItem.getPrice());
+            template.parameterValues.put("${history[" + (rowIndex - 1) + "].price}", historyItem.getPrice());
             
             newRow.addCell(2, template);
-            newRow.addCell(3, new Template("${history[" + (index - 1) + "].quantity}", historyItem.getQuantity()));
+            newRow.addCell(3, new Template("${history[" + (rowIndex - 1) + "].quantity}", historyItem.getQuantity()));
 
             index++;
+            rowIndex++;
             
         }
         
+    }
+    
+    public static Table getCorrectTableWithoutHeader() {
+        Table table = new Table();
+        fillTableRows(table, getItem().history, 0);
         return table;
-        
+    }
+    
+    public static Table getEmptyTable() {
+        Table table = new Table();
+        Item item = getItem();
+        item.history.clear();
+        fillTableRows(table, item.history, 0);
+        return table;
     }
         
 }

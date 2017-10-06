@@ -1,5 +1,6 @@
 package svm.msoffice.docx.printer.impl;
 
+import svm.msoffice.docx.printer.Converter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;

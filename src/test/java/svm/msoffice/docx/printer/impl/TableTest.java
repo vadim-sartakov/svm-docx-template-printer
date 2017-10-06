@@ -16,26 +16,31 @@ import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
  */
 public class TableTest {
     
+    private XWPFDocument document;
     private Table table;
     
     @Test
     public void testRender() throws Exception {
         
-        XWPFDocument document = new XWPFDocument(
+        document = new XWPFDocument(
                 new FileInputStream("src/test/resources/table/template.docx")
         );
         
-        XWPFTable actualTable = document.getTableArray(0);
-        actualTable.getRow(1).getTableCells().forEach(cell ->
+        testTables(1, 1, 0, ExpectedValuesFactory.getCorrectTableWithHeader());
+        testTables(0, 3, 2, ExpectedValuesFactory.getCorrectTableWithoutHeader());
+        testTables(1, 5, 4, ExpectedValuesFactory.getEmptyTable());
+        
+    }
+    
+    private void testTables(int templateRowIndex, int expectedIndex, int actualIndex, Table actualTable) {
+        
+        XWPFTable actualXwpfTable = document.getTableArray(actualIndex);
+        actualXwpfTable.getRow(templateRowIndex).getTableCells().forEach(cell ->
                 XWPFRunNormalizer.normalizeParameters(cell.getParagraphs().get(0))
         );
-        
-        XWPFTable expectedTable = document.getTableArray(1);
-
-        table = ExpectedValuesFactory.getCorrectTable();
-        table.render(actualTable);
-        
-        assertEqualTables(expectedTable, actualTable);
+        XWPFTable expectedXwpfTable = document.getTableArray(expectedIndex);
+        actualTable.render(actualXwpfTable);
+        assertEqualTables(expectedXwpfTable, actualXwpfTable);
         
     }
         

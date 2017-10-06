@@ -38,7 +38,7 @@ public class Table {
     
     private void populateTemplateRows() {
                         
-        for (int index = templateRowIndex + 1; index <= rows.size(); index++) {
+        for (int index = templateRowIndex + 1; index < rows.size() + templateRowIndex; index++) {
             
             XWPFTableRow newXwpfRow = index > xwpfTable.getRows().size() - 1 ?
                     xwpfTable.createRow() :
@@ -93,6 +93,10 @@ public class Table {
             return cell;
         }
         
+        public List<Cell> getCells() {
+            return cells;
+        }
+                
         public Cell addCell(int index, Map<Integer, Template> templates) {
             Cell cell = new Cell(index, templates);
             cells.add(cell);
@@ -150,6 +154,10 @@ public class Table {
             xwpfTableCell.getParagraphs().forEach(paragraph -> {
                 Template.renderTemplates(templates, paragraph);
             });
+        }
+
+        public Map<Integer, Template> getTemplates() {
+            return templates;
         }
 
         @Override
