@@ -105,6 +105,16 @@ public class TableParser {
     
     private void parseRows() {
         
+        if (list.isEmpty()) {
+            
+            row = newTable.addRow(templateRowIndex);
+            dataHolder.putVariable("rowNumber", null);
+            parseCells();
+            
+            return;
+            
+        }
+        
         for (rowIndex = 0; rowIndex < list.size(); rowIndex++) {
             
             dataHolder.putVariable("rowNumber", rowIndex + 1);

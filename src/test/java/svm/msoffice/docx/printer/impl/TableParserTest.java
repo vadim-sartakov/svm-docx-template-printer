@@ -2,7 +2,6 @@ package svm.msoffice.docx.printer.impl;
 
 import java.io.FileInputStream;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;

@@ -116,13 +116,13 @@ public class ExpectedValuesFactory {
         Item item = getItem();
         
         Table table = new Table();
-        fillTableRows(table, item.history, 1);
+        fillTableRows(table, item.history, 1, true);
         
         return table;
         
     }
     
-    private static void fillTableRows(Table table, List<Item.History> list, int startIndex) {
+    private static void fillTableRows(Table table, List<Item.History> list, int startIndex, boolean numerateRows) {
         
         int index = startIndex;
         int rowIndex = 1;
@@ -131,7 +131,7 @@ public class ExpectedValuesFactory {
             Table.Row newRow = table.addRow(index);
             Template template;
             
-            template = new Template("${rowNumber}", rowIndex);
+            template = new Template("${rowNumber}", numerateRows ? rowIndex : null);
             newRow.addCell(0, template);
             
             template = new Template("${history[" + (rowIndex - 1) + "].date}");
@@ -156,7 +156,7 @@ public class ExpectedValuesFactory {
     
     public static Table getCorrectTableWithoutHeader() {
         Table table = new Table();
-        fillTableRows(table, getItem().history, 0);
+        fillTableRows(table, getItem().history, 0, true);
         return table;
     }
     
@@ -164,7 +164,8 @@ public class ExpectedValuesFactory {
         Table table = new Table();
         Item item = getItem();
         item.history.clear();
-        fillTableRows(table, item.history, 0);
+        item.history.add(new Item.History(null, null, null));
+        fillTableRows(table, item.history, 1, false);
         return table;
     }
         
