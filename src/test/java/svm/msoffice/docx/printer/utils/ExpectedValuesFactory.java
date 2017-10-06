@@ -6,6 +6,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import svm.msoffice.docx.printer.impl.Table;
 import svm.msoffice.docx.printer.impl.Template;
 
 /**
@@ -106,6 +107,41 @@ public class ExpectedValuesFactory {
         );
 
         return item;
+        
+    }
+    
+    public static Table getCorrectTable() {
+        
+        Item item = getItem();
+        
+        Table table = new Table();
+        int index = 1;
+        for (Item.History historyItem : item.getHistory()) {
+            
+            Table.Row newRow = table.addRow(index);
+            Template template;
+            
+            template = new Template("${rowNumber}", index);
+            newRow.addCell(0, template);
+            
+            template = new Template("${history[" + (index - 1) + "].date}");
+            template.format = new AbstractMap.SimpleEntry<>("date", "dd.MM.yyyy");
+            template.parameterValues.put("${history[" + (index - 1) + "].date}", historyItem.getDate());
+            
+            newRow.addCell(1, template);
+            
+            template = new Template("${history[" + (index - 1) + "].price}");
+            template.format = new AbstractMap.SimpleEntry<>("number", "0.00");
+            template.parameterValues.put("${history[" + (index - 1) + "].price}", historyItem.getPrice());
+            
+            newRow.addCell(2, template);
+            newRow.addCell(3, new Template("${history[" + (index - 1) + "].quantity}", historyItem.getQuantity()));
+
+            index++;
+            
+        }
+        
+        return table;
         
     }
         

@@ -103,16 +103,40 @@ public class Item {
 
     public static class History {
         
-        public LocalDate date;
-        public BigDecimal price;
-        public Integer quantity;
+        private LocalDate date;
+        private BigDecimal price;
+        private Integer quantity;
 
         public History(LocalDate date, BigDecimal price, Integer quantity) {
             this.date = date;
             this.price = price;
             this.quantity = quantity;
         }
-        
+
+        public LocalDate getDate() {
+            return date;
+        }
+
+        public void setDate(LocalDate date) {
+            this.date = date;
+        }
+
+        public BigDecimal getPrice() {
+            return price;
+        }
+
+        public void setPrice(BigDecimal price) {
+            this.price = price;
+        }
+
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(Integer quantity) {
+            this.quantity = quantity;
+        }
+
     }
     
 }

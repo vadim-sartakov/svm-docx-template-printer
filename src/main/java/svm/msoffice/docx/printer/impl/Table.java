@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+import java.util.Objects;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
@@ -16,26 +15,25 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
  */
 public class Table {
     
-    private final XWPFTable xwpfTable;
-    private final String name;
-    private final DataHolder dataHolder;
-    private final int templateRowIndex;
     private final List<Row> rows = new ArrayList<>();   
     
-    private int tableRowIndex;
+    private XWPFTable xwpfTable;
+    private int templateRowIndex;
     private Row row;
     private XWPFTableRow xwpfRow;
-
-    public Table(XWPFTable xwpfTable, String name, DataHolder dataHolder, int templateRowIndex) {
-        this.xwpfTable = xwpfTable;
-        this.name = name;
-        this.dataHolder = dataHolder;
-        this.templateRowIndex = templateRowIndex;
-    }
     
-    public void render() {
+    public void render(XWPFTable xwpfTable) {
+        
+        this.xwpfTable = xwpfTable;
+        
+        if (rows.size() > 0) {
+            this.templateRowIndex = rows.get(0).index;
+        } else
+            this.templateRowIndex = 0;
+            
         populateTemplateRows();
-        renderRows();        
+        renderRows(); 
+        
     }
     
     private void populateTemplateRows() {
@@ -51,19 +49,14 @@ public class Table {
             
     }
                     
-    // TODO: move to parser
     private void renderRows() {
                      
-        tableRowIndex = 0;
         for (Row currentRow : rows) {
                         
-            dataHolder.putVariable("rowNumber", tableRowIndex + 1);
             row = currentRow;
             xwpfRow = xwpfTable.getRow(row.index);
             renderCells();
-            
-            tableRowIndex++;
-            
+
         }
         
     }
@@ -81,6 +74,10 @@ public class Table {
         return newRow;
     }
     
+    public List<Row> getRows() {
+        return rows;
+    }
+    
     public class Row {
         
         final int index;
@@ -95,7 +92,42 @@ public class Table {
             cells.add(cell);
             return cell;
         }
-                
+        
+        public Cell addCell(int index, Map<Integer, Template> templates) {
+            Cell cell = new Cell(index, templates);
+            cells.add(cell);
+            return cell;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + this.index;
+            hash = 17 * hash + Objects.hashCode(this.cells);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Row other = (Row) obj;
+            if (this.index != other.index) {
+                return false;
+            }
+            if (!Objects.equals(this.cells, other.cells)) {
+                return false;
+            }
+            return true;
+        }        
+    
     }
     
     public class Cell {
@@ -116,21 +148,68 @@ public class Table {
         
         void render(XWPFTableCell xwpfTableCell) {
             xwpfTableCell.getParagraphs().forEach(paragraph -> {
-                XWPFRunNormalizer.normalizeParameters(paragraph);
-                insertIndexInParameters(paragraph);
                 Template.renderTemplates(templates, paragraph);
             });
         }
-        
-        // TODO: move to parser
-        private void insertIndexInParameters(XWPFParagraph paragraph) {
-            for (XWPFRun currentRun : paragraph.getRuns()) {
-                String runText = currentRun.getText(0);
-                currentRun.setText(runText.replaceAll("\\{" + name,
-                        "\\{" + name + "[" + tableRowIndex + "]"), 0);
-            }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + this.index;
+            hash = 29 * hash + Objects.hashCode(this.templates);
+            return hash;
         }
-        
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Cell other = (Cell) obj;
+            if (this.index != other.index) {
+                return false;
+            }
+            if (!Objects.equals(this.templates, other.templates)) {
+                return false;
+            }
+            return true;
+        }
+                
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.rows);
+        hash = 53 * hash + this.templateRowIndex;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Table other = (Table) obj;
+        if (this.templateRowIndex != other.templateRowIndex) {
+            return false;
+        }
+        if (!Objects.equals(this.rows, other.rows)) {
+            return false;
+        }
+        return true;
     }
     
 }

@@ -1,7 +1,6 @@
 package svm.msoffice.docx.printer.impl;
 
 import java.io.FileInputStream;
-import java.util.AbstractMap.SimpleEntry;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
@@ -10,7 +9,6 @@ import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
-import svm.msoffice.docx.printer.utils.Item;
 
 /**
  *
@@ -18,7 +16,6 @@ import svm.msoffice.docx.printer.utils.Item;
  */
 public class TableTest {
     
-    private Item item;
     private Table table;
     
     @Test
@@ -29,50 +26,19 @@ public class TableTest {
         );
         
         XWPFTable actualTable = document.getTableArray(0);
+        actualTable.getRow(1).getTableCells().forEach(cell ->
+                XWPFRunNormalizer.normalizeParameters(cell.getParagraphs().get(0))
+        );
+        
         XWPFTable expectedTable = document.getTableArray(1);
-        
-        item = ExpectedValuesFactory.getItem();
-        DataHolder dataHolder = new DataHolder(item);
-        
-        table = new Table(actualTable, "history", dataHolder, 1);
-        fillTableWithTemplates();
-                
-        table.render();
+
+        table = ExpectedValuesFactory.getCorrectTable();
+        table.render(actualTable);
         
         assertEqualTables(expectedTable, actualTable);
         
     }
-    
-    private void fillTableWithTemplates() {
         
-        int index = 1;
-        for (Item.History historyItem : item.getHistory()) {
-            
-            Table.Row newRow = table.addRow(index);
-            Template template;
-            
-            template = new Template("${rowNumber}", index);
-            newRow.addCell(0, template);
-            
-            template = new Template("${history.date}");
-            template.format = new SimpleEntry<>("date", "dd.MM.yyyy");
-            template.parameterValues.put("${history.date}", historyItem.date);
-            
-            newRow.addCell(1, template);
-            
-            template = new Template("${history.price}");
-            template.format = new SimpleEntry<>("number", "0.00");
-            template.parameterValues.put("${history.price}", historyItem.price);
-            
-            newRow.addCell(2, template);
-            newRow.addCell(3, new Template("${history.quantity}", historyItem.quantity));
-
-            index++;
-            
-        }
-        
-    }
-    
     private void assertEqualTables(XWPFTable expectedTable, XWPFTable actualTable) {
         
         assertEquals(expectedTable.getRows().size(), actualTable.getRows().size());

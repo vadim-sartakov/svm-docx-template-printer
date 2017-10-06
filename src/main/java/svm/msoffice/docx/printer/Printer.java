@@ -73,8 +73,10 @@ public class Printer<T> {
     }
                         
     private void parseAndRenderTables() {
-        List<Table> tables = new TableParser(templateFile.getTables()).parse();
-        tables.forEach(table -> table.render());
+        templateFile.getTables().forEach(xwpfTable -> {
+            Table table = new TableParser(dataHolder, xwpfTable).parse();
+            table.render(xwpfTable);
+        });
     }
         
     public void save(OutputStream outputStream) {
