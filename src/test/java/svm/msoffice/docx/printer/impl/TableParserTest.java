@@ -3,10 +3,8 @@ package svm.msoffice.docx.printer.impl;
 import java.io.FileInputStream;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
 import svm.msoffice.docx.printer.utils.Item;
 
