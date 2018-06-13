@@ -4,19 +4,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import svm.msoffice.docx.printer.Printer;
 
-/**
- *
- * @author sartakov
- */
 public class PrinterFactory {
     
-    public static <T> Printer<T> getInstance(String input) {
+    public static Printer<Item> getInstance(String input) {
         
         Item item = ExpectedValuesFactory.getItem();
-        Printer<T> printer;
+        Printer<Item> printer;
         
         try {
-            printer = new Printer(
+            printer = new Printer<>(
                     item,
                     new FileInputStream(input)
             );
@@ -28,7 +24,7 @@ public class PrinterFactory {
         
     }
         
-    public static <T> Printer<T> getInstance() {
+    public static Printer<Item> getInstance() {
         return getInstance("src/test/resources/template.docx");
         
     }

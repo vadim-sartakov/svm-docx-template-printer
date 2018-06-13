@@ -17,10 +17,6 @@ import static org.junit.Assert.*;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
 import svm.msoffice.docx.printer.utils.Item;
 
-/**
- *
- * @author sartakov
- */
 public class PrinterTest {
     
     private XWPFDocument expectedDocument, actualDocument;
@@ -31,7 +27,7 @@ public class PrinterTest {
     public void testSomeMethod() throws Exception {
         
         Item item = ExpectedValuesFactory.getItem();
-        Printer<Item> printer = new Printer(item,
+        Printer<Item> printer = new Printer<>(item,
                 new FileInputStream("src/test/resources/printer/template.docx")
         );
         

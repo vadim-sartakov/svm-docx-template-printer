@@ -48,6 +48,7 @@ public class TableParser {
      * Any column in first section (before first dot)
      * should contain table name to iterate.
      */
+    @SuppressWarnings("unchecked")
     private void getTableNameAndList() {
         
         int index = 0;

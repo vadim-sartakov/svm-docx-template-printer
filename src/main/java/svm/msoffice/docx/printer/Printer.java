@@ -47,7 +47,7 @@ public class Printer<T> {
         
     }
         
-    public Printer (T object, InputStream inputStream) {
+    public Printer(T object, InputStream inputStream) {
         this(object, inputStream, null);
     }
             
