@@ -35,7 +35,7 @@ public class XWPFRunNormalizer {
     
     public static void normalizeParameters(XWPFParagraph paragraph) {
         new XWPFRunNormalizer(paragraph, "\\$\\{[^\\{]+\\}").normalize();
-        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)\\]").normalize();
+        new XWPFRunNormalizer(paragraph, "\\[\\{[^\\[\\]]+(?R)*\\]").normalize();
     }
     
     public void normalize() {
