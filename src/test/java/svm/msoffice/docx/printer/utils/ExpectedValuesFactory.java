@@ -10,10 +10,6 @@ import java.util.Map;
 import svm.msoffice.docx.printer.impl.Table;
 import svm.msoffice.docx.printer.impl.Template;
 
-/**
- *
- * @author sartakov
- */
 public class ExpectedValuesFactory {
     
     public static Map<Integer, Template> getCorrectTemplates() {

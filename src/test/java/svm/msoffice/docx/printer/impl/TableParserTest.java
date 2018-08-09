@@ -7,10 +7,6 @@ import static org.junit.Assert.*;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
 import svm.msoffice.docx.printer.utils.Item;
 
-/**
- *
- * @author sartakov
- */
 public class TableParserTest {
     
     private DataHolder dataHolder;

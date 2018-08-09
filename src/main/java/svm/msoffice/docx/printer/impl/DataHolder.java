@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Contains shared data.
  * Holds object, converters and variables.
- * @author sartakov
+ * @author Vadim Sartakov
  */
 public class DataHolder {
         

@@ -13,10 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import svm.msoffice.docx.printer.Printer;
 
-/**
- *
- * @author sartakov
- */
 public class TemplateParser {
     
     /**

@@ -20,11 +20,6 @@ import svm.msoffice.docx.printer.impl.Template;
 import svm.msoffice.docx.printer.impl.TemplateParser;
 import svm.msoffice.docx.printer.impl.XWPFRunNormalizer;
 
-/**
- * MS Word template printer.
- * @author sartakov
- * @param <T> 
- */
 public class Printer<T> {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(Printer.class);

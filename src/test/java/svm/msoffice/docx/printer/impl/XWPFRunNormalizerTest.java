@@ -14,10 +14,6 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- *
- * @author sartakov
- */
 public class XWPFRunNormalizerTest {
                 
     private String sourceParagraphText;

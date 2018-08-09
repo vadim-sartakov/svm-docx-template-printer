@@ -2,8 +2,8 @@ package svm.msoffice.docx.printer.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import svm.misc.regex.Matcher;
-import svm.misc.regex.Pattern;
+import svm.util.regex.Matcher;
+import svm.util.regex.Pattern;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
@@ -11,7 +11,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
  * MS Word arbitrary splits paragraph into separate runs.
  * As result, it makes impossible to parse parameters.
  * This class restores run consistency for further processing.
- * @author sartakov
+ * @author Vadim Sartakov
  */
 public class XWPFRunNormalizer {
         

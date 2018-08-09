@@ -65,7 +65,7 @@
             <artifactId>log4j-over-slf4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>svm.misc</groupId>
+            <groupId>svm.util</groupId>
             <artifactId>svm-regex</artifactId>
             <version>1.0.1</version>
         </dependency>
@@ -101,21 +101,7 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
-            
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            
+
         </plugins>
     </build>
     

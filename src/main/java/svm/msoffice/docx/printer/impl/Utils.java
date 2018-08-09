@@ -5,10 +5,6 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
-/**
- *
- * @author sartakov
- */
 public class Utils {
     
     // Applying ctr copying leads to unexpected results. So, copying by hand.

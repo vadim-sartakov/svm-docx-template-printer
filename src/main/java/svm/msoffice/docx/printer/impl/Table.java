@@ -9,10 +9,6 @@ import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
-/**
- *
- * @author sartakov
- */
 public class Table {
     
     private final List<Row> rows = new ArrayList<>();   

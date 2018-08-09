@@ -15,7 +15,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 /**
  * Parsed representation of renderable fragment.
- * @author sartakov
+ * @author Vadim Sartakov
  */
 public class Template {
     

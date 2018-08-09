@@ -6,10 +6,6 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-/**
- * Dumb class for filling templates.
- * @author sartakov
- */
 @Data
 public class Item {
     

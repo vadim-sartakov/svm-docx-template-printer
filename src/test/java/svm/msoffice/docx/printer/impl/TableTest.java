@@ -10,10 +10,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import svm.msoffice.docx.printer.utils.ExpectedValuesFactory;
 
-/**
- *
- * @author sartakov
- */
 public class TableTest {
     
     private XWPFDocument document;
